@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@600&display=swap");
 @import "tailwindcss";
 @theme {
   /* Custom colors for your Expense Tracker */
@@ -5,8 +6,7 @@
   --color-income: #22c55e;
   --color-expense: #ef4444;
 
-  /* Adding a custom font if you want that "Fintech" look */
-  --font-sans: "Inter", ui-sans-serif, system-ui;
+  --font-sans: "Rubik", ui-sans-serif, system-ui;
 }
 
 :root {
@@ -75,6 +75,11 @@
 
 body {
   margin: 0;
+  background: #ffffff;
+}
+
+#root {
+  background: #ffffff;
 }
 
 h1,
