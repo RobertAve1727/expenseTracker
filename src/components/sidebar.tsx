@@ -18,7 +18,7 @@ const Sidebar = () => {
         <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20">
           <div className="w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin-slow"></div>
         </div>
-        <span className="font-bold text-xl tracking-tight">Profitcal</span>
+        <span className="font-bold text-xl tracking-tight">ZeroBalance</span>
       </div>
 
       {/* Search Bar */}

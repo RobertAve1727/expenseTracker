@@ -47,7 +47,7 @@ const Register = () => {
       <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
         <main className="flex flex-col justify-center px-4 lg:px-20 py-12 text-left font-semibold text-slate-800">
           <div className="w-full max-w-sm mx-auto lg:mx-0">
-            <h1 className="text-3xl font-bold text-black mb-2">
+            <h1 className="text-3xl font-bold text-black! mb-2">
               Create an account
             </h1>
             <p className="text-slate-500 mb-10 font-normal">
