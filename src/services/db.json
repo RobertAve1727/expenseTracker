@@ -1,49 +1,21 @@
 {
   "users": [
     {
-      "name": "RobertAvelino",
-      "email": "gwapoko@123.com",
+      "name": "robert",
+      "email": "gwapo@123.com",
       "password": "123",
-      "id": "AvH_M3oj9OQ"
-    },
-    {
-      "name": "jiyong",
-      "email": "jiyong@17.com",
-      "password": "123",
-      "id": "fh8WNPMDlq8"
-    },
-    {
-      "name": "jiyongie",
-      "email": "gwapaka@123.com",
-      "password": "gwapa",
-      "id": "_lg7dW_KCCQ"
-    },
-    {
-      "name": "quiela",
-      "email": "quiela@123.com",
-      "password": "123",
-      "id": "M0kyFKyhm5Q"
-    },
-    {
-      "name": "ramas",
-      "email": "ramas@123.com",
-      "password": "123",
-      "id": "11NxGicOgwE"
-    },
-    {
-      "name": "ramas2",
-      "email": "ramas2@123.com",
-      "password": "123",
-      "id": "N78xa93q0hk"
+      "id": "GCc_bGf3twk"
     }
   ],
   "transactions": [
     {
-      "id": "#22312",
+      "id": "qJxWvNokWJg",
       "type": "Income",
-      "date": "March 14, 2025",
-      "amount": "+$200",
-      "status": "Completed"
+      "date": "March 28, 2026",
+      "amount": "+$250",
+      "status": "Completed",
+      "note": "Full tank for motorcycle",
+      "category": "Transport"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

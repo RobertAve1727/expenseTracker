@@ -14,12 +14,12 @@ export interface User {
 
 export interface Transaction {
   id: string;
-  userId: string;
-  description: string;
-  amount: number;
-  category: Category;
-  date: string; // ISO String
-  type: "income" | "expense";
+  type: "Income" | "Expense";
+  date: string;
+  amount: string;
+  status: string;
+  note?: string;
+  category: string;
 }
 
 export interface Budget {
