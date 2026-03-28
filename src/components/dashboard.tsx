@@ -1,4 +1,3 @@
-import React from "react";
 import {
   BarChart,
   Bar,
@@ -13,12 +12,11 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { TrendingUp, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import Sidebar from "../components/sidebar"; // Adjust path as needed
+import { ArrowUpRight } from "lucide-react";
 
 const revenueData = [
   { name: "January", current: 4000, projection: 5000 },
-  { name: "Februrary", current: 3000, projection: 8000 },
+  { name: "February", current: 3000, projection: 8000 },
   { name: "March", current: 6000, projection: 5500 },
   { name: "April", current: 2780, projection: 6000 },
   { name: "June", current: 1890, projection: 4800 },
@@ -35,8 +33,6 @@ const expenseData = [
 const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
-      <Sidebar />
-
       <main className="flex-1 p-8">
         <header className="flex justify-between items-center mb-10">
           <div>
