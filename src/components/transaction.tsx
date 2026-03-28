@@ -12,39 +12,38 @@ import {
   ShoppingBag,
   Clock,
 } from "lucide-react";
-// 1. Import your central types and the new Service
-import type { Transaction, Category } from "../types/index";
+import type { Transaction } from "../types/index";
 import { TransactionService } from "../services/transactionService";
 import AddTransactionModal from "../features/addTransaction";
 
 const TransactionPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // 2. Initialize with empty array and fetch from DB
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("All");
 
-  // 3. Load data from db.json on mount
+  // MOCK USER ID: Ensure this matches an ID in your db.json users array
+  const currentUserId = "GCc_bGf3twk";
+
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await TransactionService.getAll();
+        const data = await TransactionService.getAllByUserId(currentUserId);
         setTransactions(data);
       } catch (err) {
         console.error("Failed to load transactions", err);
       }
     };
     loadData();
-  }, []);
+  }, [currentUserId]);
 
   const handleAddTransaction = (newTx: Transaction) => {
-    // Latest first
-    setTransactions([newTx, ...transactions]);
+    setTransactions((prev) => [newTx, ...prev]);
   };
 
   const deleteTransaction = async (id: string) => {
+    if (!window.confirm("Delete this transaction?")) return;
     try {
-      // 4. Delete from DB first, then update UI
       await TransactionService.delete(id);
       setTransactions(transactions.filter((t) => t.id !== id));
     } catch (err) {
@@ -53,7 +52,6 @@ const TransactionPage: React.FC = () => {
   };
 
   const filteredTransactions = transactions.filter((t) => {
-    // 5. Handle potential undefined note and check search/category
     const matchesSearch = (t.note || "")
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
@@ -77,14 +75,13 @@ const TransactionPage: React.FC = () => {
 
   return (
     <div className="flex-1 p-8 bg-[#0f1115] min-h-screen font-['Rubik'] text-slate-200">
-      {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight">
             Transactions
           </h1>
           <p className="text-slate-500 text-sm mt-1 flex items-center gap-2">
-            <Clock size={14} /> History of your recent activity
+            <Clock size={14} /> History for user: {currentUserId}
           </p>
         </div>
 
@@ -96,7 +93,6 @@ const TransactionPage: React.FC = () => {
         </button>
       </div>
 
-      {/* SEARCH & FILTERS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="relative md:col-span-2">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 w-5 h-5" />
@@ -126,8 +122,7 @@ const TransactionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* TRANSACTION TABLE */}
-      <div className="bg-[#1a1d23] border border-slate-800/50 rounded-4xl overflow-hidden shadow-2xl">
+      <div className="bg-[#1a1d23] border border-slate-800/50 rounded-[2rem] overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -147,7 +142,6 @@ const TransactionPage: React.FC = () => {
                 >
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
-                      {/* Using item.type matches "Income" | "Expense" now */}
                       <div
                         className={`p-3 rounded-2xl ${item.type === "Income" ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}
                       >
@@ -159,7 +153,7 @@ const TransactionPage: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-white group-hover:text-[#6366f1] transition-colors">
-                          {item.note || "No description"}
+                          {item.note || "No note"}
                         </p>
                         <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">
                           {item.type}
@@ -169,8 +163,7 @@ const TransactionPage: React.FC = () => {
                   </td>
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 bg-slate-800/40 w-fit px-3 py-1.5 rounded-xl border border-slate-700/50 uppercase tracking-tight">
-                      {getIcon(item.category)}
-                      {item.category}
+                      {getIcon(item.category)} {item.category}
                     </div>
                   </td>
                   <td className="px-8 py-5 text-sm text-slate-500 font-medium">
@@ -194,24 +187,13 @@ const TransactionPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-
-        {filteredTransactions.length === 0 && (
-          <div className="py-24 text-center">
-            <div className="bg-[#0f1115] w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-slate-800">
-              <ShoppingBag className="text-slate-700" size={32} />
-            </div>
-            <p className="text-white font-bold text-lg">No records found</p>
-            <p className="text-slate-500 text-sm mt-1">
-              Try changing your search or adding a new transaction.
-            </p>
-          </div>
-        )}
       </div>
 
       <AddTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAdd={handleAddTransaction}
+        userId={currentUserId}
       />
     </div>
   );

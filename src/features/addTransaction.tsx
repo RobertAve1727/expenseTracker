@@ -7,9 +7,15 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (tx: Transaction) => void;
+  userId: string;
 }
 
-const AddTransactionModal: React.FC<Props> = ({ isOpen, onClose, onAdd }) => {
+const AddTransactionModal: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  onAdd,
+  userId,
+}) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     amount: "",
@@ -25,10 +31,9 @@ const AddTransactionModal: React.FC<Props> = ({ isOpen, onClose, onAdd }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const savedTx = await TransactionService.create(formData);
+      const savedTx = await TransactionService.create(formData, userId);
       onAdd(savedTx);
       onClose();
-      // Reset form
       setFormData({
         amount: "",
         category: "Food" as Category,
@@ -38,6 +43,7 @@ const AddTransactionModal: React.FC<Props> = ({ isOpen, onClose, onAdd }) => {
       });
     } catch (error) {
       console.error("Save failed:", error);
+      alert("Error saving transaction. Is json-server running?");
     } finally {
       setLoading(false);
     }
@@ -57,7 +63,6 @@ const AddTransactionModal: React.FC<Props> = ({ isOpen, onClose, onAdd }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Type Toggle */}
           <div className="flex bg-[#0f1115] p-1 rounded-xl border border-slate-800">
             {["expense", "income"].map((t) => (
               <button
@@ -75,7 +80,6 @@ const AddTransactionModal: React.FC<Props> = ({ isOpen, onClose, onAdd }) => {
             ))}
           </div>
 
-          {/* Amount */}
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
               Amount
@@ -99,85 +103,63 @@ const AddTransactionModal: React.FC<Props> = ({ isOpen, onClose, onAdd }) => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Category */}
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
                 Category
               </label>
-              <div className="relative">
-                <Tag
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-                  size={16}
-                />
-                <select
-                  className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-white outline-none appearance-none"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      category: e.target.value as Category,
-                    })
-                  }
-                >
-                  <option value="Food">Food</option>
-                  <option value="Transport">Transport</option>
-                  <option value="Bills">Bills</option>
-                  <option value="Entertainment">Entertainment</option>
-                  <option value="Income">Income</option>
-                  <option value="Custom">Custom</option>
-                </select>
-              </div>
+              <select
+                className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 px-4 text-white outline-none appearance-none"
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    category: e.target.value as Category,
+                  })
+                }
+              >
+                <option value="Food">Food</option>
+                <option value="Transport">Transport</option>
+                <option value="Bills">Bills</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Income">Income</option>
+                <option value="Custom">Custom</option>
+              </select>
             </div>
-
-            {/* Date */}
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
                 Date
               </label>
-              <div className="relative">
-                <Calendar
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-                  size={16}
-                />
-                <input
-                  type="date"
-                  className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 pl-10 text-white outline-none"
-                  value={formData.date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Note */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
-              Note
-            </label>
-            <div className="relative">
-              <FileText
-                className="absolute left-3 top-3 text-slate-500"
-                size={16}
-              />
-              <textarea
-                placeholder="Description..."
-                className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 pl-10 text-white outline-none resize-none"
-                value={formData.note}
+              <input
+                type="date"
+                className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 px-4 text-white outline-none"
+                value={formData.date}
                 onChange={(e) =>
-                  setFormData({ ...formData, note: e.target.value })
+                  setFormData({ ...formData, date: e.target.value })
                 }
               />
             </div>
           </div>
 
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
+              Note
+            </label>
+            <textarea
+              placeholder="What was this for?"
+              className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 px-4 text-white outline-none h-24 resize-none"
+              value={formData.note}
+              onChange={(e) =>
+                setFormData({ ...formData, note: e.target.value })
+              }
+            />
+          </div>
+
           <button
             disabled={loading}
             type="submit"
-            className="w-full bg-[#6366f1] hover:bg-[#5558e3] text-white font-bold py-4 rounded-xl mt-4 transition-all disabled:opacity-50"
+            className="w-full bg-[#6366f1] hover:bg-[#5558e3] text-white font-bold py-4 rounded-xl mt-4 transition-all"
           >
-            {loading ? "Saving..." : "Save Transaction"}
+            {loading ? "Processing..." : "Save Transaction"}
           </button>
         </form>
       </div>

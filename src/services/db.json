@@ -5,17 +5,34 @@
       "email": "gwapo@123.com",
       "password": "123",
       "id": "GCc_bGf3twk"
+    },
+    {
+      "name": "quiela",
+      "email": "gwapa@123.com",
+      "password": "123",
+      "id": "NwCO3txSMyY"
     }
   ],
   "transactions": [
     {
       "id": "qJxWvNokWJg",
+      "userId": "GCc_bGf3twk",
       "type": "Income",
       "date": "March 28, 2026",
       "amount": "+$250",
       "status": "Completed",
       "note": "Full tank for motorcycle",
       "category": "Transport"
+    },
+    {
+      "id": "tLyyUJ0AxuE",
+      "userId": "GCc_bGf3twk",
+      "type": "Expense",
+      "date": "March 28, 2026",
+      "amount": "-$850",
+      "status": "Completed",
+      "note": "Book for ACCTG 301",
+      "category": "Custom"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
