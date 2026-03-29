@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { X, DollarSign, Calendar, Tag, FileText } from "lucide-react";
+import {
+  X,
+  DollarSign,
+  Calendar,
+  Tag,
+  FileText,
+  ChevronDown,
+} from "lucide-react";
 import type { Transaction, Category } from "../types";
 import { TransactionService } from "../services/transactionService";
 
@@ -43,36 +50,40 @@ const AddTransactionModal: React.FC<Props> = ({
       });
     } catch (error) {
       console.error("Save failed:", error);
-      alert("Error saving transaction. Is json-server running?");
+      alert("Error saving transaction. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[#1a1d23] border border-slate-800 w-full max-w-md rounded-[2rem] overflow-hidden shadow-2xl">
-        <div className="flex justify-between items-center p-6 border-b border-slate-800">
-          <h2 className="text-xl font-bold text-white">Add Transaction</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm p-4 transition-all">
+      <div className="bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl transition-colors duration-300">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            Add Transaction
+          </h2>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-white transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-white transition-all"
           >
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="flex bg-[#0f1115] p-1 rounded-xl border border-slate-800">
+        <form onSubmit={handleSubmit} className="p-7 space-y-5">
+          {/* Type Switcher */}
+          <div className="flex bg-slate-100 dark:bg-[#0f1115] p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
             {["expense", "income"].map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setFormData({ ...formData, type: t })}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg capitalize transition-all ${
+                className={`flex-1 py-2.5 text-xs font-bold rounded-xl capitalize transition-all ${
                   formData.type === t
-                    ? "bg-[#6366f1] text-white shadow-lg"
-                    : "text-slate-500"
+                    ? "bg-indigo-600 dark:bg-[#6366f1] text-white shadow-md"
+                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 }`}
               >
                 {t}
@@ -80,20 +91,21 @@ const AddTransactionModal: React.FC<Props> = ({
             ))}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
+          {/* Amount Input */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-1 tracking-widest">
               Amount
             </label>
-            <div className="relative">
-              <DollarSign
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-                size={16}
-              />
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                <DollarSign size={18} />
+              </div>
               <input
                 required
                 type="number"
+                step="0.01"
                 placeholder="0.00"
-                className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 pl-10 text-white outline-none focus:ring-2 focus:ring-[#6366f1]"
+                className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-semibold"
                 value={formData.amount}
                 onChange={(e) =>
                   setFormData({ ...formData, amount: e.target.value })
@@ -103,35 +115,44 @@ const AddTransactionModal: React.FC<Props> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
+            {/* Category Select */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-1 tracking-widest">
                 Category
               </label>
-              <select
-                className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 px-4 text-white outline-none appearance-none"
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    category: e.target.value as Category,
-                  })
-                }
-              >
-                <option value="Food">Food</option>
-                <option value="Transport">Transport</option>
-                <option value="Bills">Bills</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Income">Income</option>
-                <option value="Custom">Custom</option>
-              </select>
+              <div className="relative">
+                <select
+                  className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      category: e.target.value as Category,
+                    })
+                  }
+                >
+                  <option value="Food">Food</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Bills">Bills</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Income">Income</option>
+                  <option value="Custom">Custom</option>
+                </select>
+                <ChevronDown
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  size={16}
+                />
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
+
+            {/* Date Input */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-1 tracking-widest">
                 Date
               </label>
               <input
                 type="date"
-                className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 px-4 text-white outline-none"
+                className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
                 value={formData.date}
                 onChange={(e) =>
                   setFormData({ ...formData, date: e.target.value })
@@ -140,13 +161,14 @@ const AddTransactionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase px-1">
+          {/* Note Textarea */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-1 tracking-widest">
               Note
             </label>
             <textarea
-              placeholder="What was this for?"
-              className="w-full bg-[#0f1115] border border-slate-800 rounded-xl py-3 px-4 text-white outline-none h-24 resize-none"
+              placeholder="Enter a description..."
+              className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none h-28 resize-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               value={formData.note}
               onChange={(e) =>
                 setFormData({ ...formData, note: e.target.value })
@@ -154,12 +176,20 @@ const AddTransactionModal: React.FC<Props> = ({
             />
           </div>
 
+          {/* Submit Button */}
           <button
             disabled={loading}
             type="submit"
-            className="w-full bg-[#6366f1] hover:bg-[#5558e3] text-white font-bold py-4 rounded-xl mt-4 transition-all"
+            className="w-full bg-indigo-600 dark:bg-[#6366f1] hover:bg-indigo-700 dark:hover:bg-[#5558e3] text-white font-bold py-4 rounded-2xl mt-4 transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/20 disabled:opacity-50"
           >
-            {loading ? "Processing..." : "Save Transaction"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Processing...
+              </span>
+            ) : (
+              "Save Transaction"
+            )}
           </button>
         </form>
       </div>

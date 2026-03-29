@@ -1,3 +1,4 @@
+import React, { useEffect } from "react"; // Added useEffect
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,7 +10,7 @@ import Login from "./components/login";
 import Register from "./components/register";
 import Dashboard from "./components/dashboard";
 import TransactionPage from "./components/transaction";
-import SettingsPage from "./components/settings"; // 1. Import your new page
+import SettingsPage from "./components/settings";
 import Sidebar from "./components/sidebar";
 import "./App.css";
 
@@ -27,6 +28,16 @@ const AppLayout = () => {
 };
 
 function App() {
+  // --- THEME PERSISTENCE LOGIC ---
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
   return (
     <Router>
       <Routes>
@@ -38,8 +49,6 @@ function App() {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<TransactionPage />} />
-
-          {/* 2. Add the Settings Route here */}
           <Route path="/settings" element={<SettingsPage />} />
 
           {/* Default dashboard as index */}
