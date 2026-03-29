@@ -1,4 +1,4 @@
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ArrowUpDown,
@@ -15,6 +15,21 @@ import {
 } from "lucide-react";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+
+  // 1. Get Dynamic User Data from localStorage
+  const savedUser = localStorage.getItem("user");
+  const currentUser = savedUser ? JSON.parse(savedUser) : null;
+
+  // 2. Handle Logout Function
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Clear the session
+    localStorage.removeItem("user");
+    // Redirect to login
+    navigate("/login");
+  };
+
   return (
     <aside className="w-64 bg-[#0f1115] text-slate-400 flex flex-col p-6 border-r border-slate-800/50 h-screen sticky top-0 font-['Rubik']">
       {/* Brand Logo */}
@@ -132,24 +147,28 @@ const Sidebar = () => {
       <div className="mt-auto flex items-center gap-3 p-2 border-t border-slate-800/50 pt-6">
         <div className="relative">
           <img
-            src="https://i.pravatar.cc/100?img=12"
+            src={`https://ui-avatars.com/api/?name=${currentUser?.name || "User"}&background=6366f1&color=fff`}
             className="w-10 h-10 rounded-xl border border-slate-700 object-cover"
             alt="user"
           />
           <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-indigo-500 border-2 border-[#0f1115] rounded-full"></div>
         </div>
         <div className="overflow-hidden flex-1 ml-1">
-          <p className="text-sm font-bold text-white truncate">Capital M</p>
+          <p className="text-sm font-bold text-white truncate">
+            {currentUser?.name || "Guest User"}
+          </p>
           <p className="text-[10px] truncate text-slate-500 tracking-tight">
-            chris@capitalm.co
+            {currentUser?.email || "not logged in"}
           </p>
         </div>
-        <Link
-          to="/login"
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
           className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-400/10 rounded-lg transition-all"
+          title="Logout"
         >
           <LogOut size={18} />
-        </Link>
+        </button>
       </div>
     </aside>
   );

@@ -4,7 +4,7 @@ const API_URL = "http://localhost:5000/transactions";
 
 export const TransactionService = {
   // Fetch only transactions belonging to a specific User
-  async getAllByUserId(userId: string): Promise<Transaction[]> {
+  async getAllByUserId(userId: string | number): Promise<Transaction[]> {
     const res = await fetch(`${API_URL}?userId=${userId}`);
     if (!res.ok) throw new Error("Failed to fetch transactions");
     const data = await res.json();
@@ -19,14 +19,14 @@ export const TransactionService = {
       note: string;
       date: string;
     },
-    userId: string,
+    userId: string | number,
   ): Promise<Transaction> {
     const typeValue = (formData.type.charAt(0).toUpperCase() +
       formData.type.slice(1)) as "Income" | "Expense";
 
     const newTransaction: Transaction = {
       id: `#${Math.floor(10000 + Math.random() * 90000)}`,
-      userId: userId, // Links transaction to user
+      userId: userId, // Links transaction to the numeric/specific user ID
       type: typeValue,
       date: new Date(formData.date).toLocaleDateString("en-US", {
         month: "long",

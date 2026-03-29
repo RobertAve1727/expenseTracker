@@ -15,24 +15,22 @@
   ],
   "transactions": [
     {
-      "id": "qJxWvNokWJg",
+      "id": "#11111",
       "userId": "GCc_bGf3twk",
-      "type": "Income",
-      "date": "March 28, 2026",
-      "amount": "+$250",
-      "status": "Completed",
-      "note": "Full tank for motorcycle",
-      "category": "Transport"
+      "note": "Robert's Pizza",
+      "amount": "-$20",
+      "type": "Expense",
+      "category": "Food"
     },
     {
-      "id": "tLyyUJ0AxuE",
+      "id": "h_a1yiahsz8",
       "userId": "GCc_bGf3twk",
       "type": "Expense",
-      "date": "March 28, 2026",
-      "amount": "-$850",
+      "date": "March 29, 2026",
+      "amount": "-$250",
       "status": "Completed",
-      "note": "Book for ACCTG 301",
-      "category": "Custom"
+      "note": "Full tank motorcycle",
+      "category": "Food"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

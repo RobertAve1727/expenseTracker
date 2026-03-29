@@ -14,12 +14,13 @@ export interface User {
 
 export interface Transaction {
   id: string;
+  userId: string | number; // <--- ADD THIS LINE
   type: "Income" | "Expense";
   date: string;
   amount: string;
   status: string;
-  note?: string;
-  category: string;
+  note: string;
+  category: Category;
 }
 
 export interface Budget {

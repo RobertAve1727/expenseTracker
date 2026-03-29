@@ -14,14 +14,18 @@ const Register = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Stop event bubbling to ensure no parent triggers a reload
     e.stopPropagation();
-    await registerUser(formData);
+
+    // registerUser should return the created user object from your hook
+    const result = await registerUser(formData);
+
+    // If your hook doesn't automatically save to localStorage,
+    // ensure the login state is set here or in the hook.
   };
 
   return (
     <div className="relative min-h-screen flex bg-white p-4 lg:p-8 font-sans">
-      {/* 🟠 SUCCESS OVERLAY MODAL 🟠 */}
+      {/* SUCCESS OVERLAY */}
       {isSuccess && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
           <div className="bg-white p-10 rounded-[40px] shadow-2xl max-w-sm w-full text-center border border-slate-100 animate-in zoom-in duration-300">
@@ -36,7 +40,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="w-full py-4 bg-black text-white rounded-2xl font-bold hover:opacity-90 active:scale-[0.98] transition-all shadow-xl"
+              className="w-full py-4 bg-black text-white rounded-2xl font-bold hover:opacity-90 transition-all shadow-xl"
             >
               Sign in now
             </button>
@@ -45,14 +49,12 @@ const Register = () => {
       )}
 
       <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <main className="flex flex-col justify-center px-4 lg:px-20 py-12 text-left font-semibold text-slate-800">
+        <main className="flex flex-col justify-center px-4 lg:px-20 py-12">
           <div className="w-full max-w-sm mx-auto lg:mx-0">
-            <h1 className="text-3xl font-bold text-black! mb-2">
+            <h1 className="text-3xl font-bold text-black mb-2">
               Create an account
             </h1>
-            <p className="text-slate-500 mb-10 font-normal">
-              Let's get started with your 30 day free trial.
-            </p>
+            <p className="text-slate-500 mb-10">Start your journey today.</p>
 
             {error && (
               <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl">
@@ -110,13 +112,13 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 bg-black text-white rounded-xl font-bold mt-6 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg disabled:bg-slate-400"
+                className="w-full py-4 bg-black text-white rounded-xl font-bold mt-6 hover:opacity-90 transition-all disabled:bg-slate-400"
               >
                 {isLoading ? "Creating account..." : "Create account"}
               </button>
             </form>
 
-            <p className="mt-8 text-sm text-slate-500 font-normal">
+            <p className="mt-8 text-sm text-slate-500">
               Already have an account?{" "}
               <button
                 onClick={() => navigate("/login")}
@@ -128,15 +130,13 @@ const Register = () => {
           </div>
         </main>
 
-        <aside className="hidden lg:flex bg-black rounded-[40px] p-10 overflow-hidden relative shadow-2xl">
-          <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-slate-800/40 via-transparent to-transparent opacity-50"></div>
+        <aside className="hidden lg:flex bg-black rounded-[40px] p-10 relative overflow-hidden shadow-2xl">
           <div className="relative z-10 flex flex-col justify-center text-white">
-            <h2 className="text-4xl font-bold mb-4 leading-tight">
+            <h2 className="text-4xl font-bold mb-4">
               Start your journey with us.
             </h2>
-            <p className="text-slate-400 text-sm max-w-md leading-relaxed font-normal">
+            <p className="text-slate-400 text-sm max-w-md">
               Join over 1,000+ users managing their finances with ease.
-              Effortless expense tracking designed for clarity.
             </p>
           </div>
         </aside>
