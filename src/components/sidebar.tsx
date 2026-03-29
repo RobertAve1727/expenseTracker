@@ -17,25 +17,22 @@ import {
 const Sidebar = () => {
   const navigate = useNavigate();
 
-  // 1. Get Dynamic User Data from localStorage
   const savedUser = localStorage.getItem("user");
   const currentUser = savedUser ? JSON.parse(savedUser) : null;
 
-  // 2. Handle Logout Function
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Clear the session
     localStorage.removeItem("user");
-    // Redirect to login
     navigate("/login");
   };
 
   return (
-    <aside className="w-64 bg-[#0f1115] text-slate-400 flex flex-col p-6 border-r border-slate-800/50 h-screen sticky top-0 font-['Rubik']">
+    /* UPDATED: Added bg-white and dark:bg-[#0f1115] for theme support */
+    <aside className="w-64 bg-white dark:bg-[#0f1115] text-slate-500 dark:text-slate-400 flex flex-col p-6 border-r border-slate-200 dark:border-slate-800/50 h-screen sticky top-0 font-['Rubik'] transition-colors duration-300">
       {/* Brand Logo */}
       <Link
         to="/dashboard"
-        className="flex items-center gap-3 text-white mb-8 px-2"
+        className="flex items-center gap-3 text-slate-900 dark:text-white mb-8 px-2"
       >
         <div className="bg-[#6366f1] p-1.5 rounded-lg shadow-lg shadow-indigo-500/20">
           <div className="w-5 h-5 border-2 border-white rotate-45 flex items-center justify-center">
@@ -47,17 +44,17 @@ const Sidebar = () => {
 
       {/* Search Bar */}
       <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
         <input
           type="text"
           placeholder="Search..."
-          className="w-full bg-[#1a1d23] border border-slate-800 rounded-xl py-2 pl-10 text-xs text-slate-200 focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
+          className="w-full bg-slate-100 dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-10 text-xs text-slate-900 dark:text-slate-200 focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
         />
       </div>
 
       {/* Main Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-3 px-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 px-2">
           Overview
         </p>
         <NavItem
@@ -77,7 +74,7 @@ const Sidebar = () => {
         />
 
         <div className="pt-6">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-3 px-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 px-2">
             Planning & Analytics
           </p>
           <NavItem
@@ -98,7 +95,7 @@ const Sidebar = () => {
         </div>
 
         <div className="pt-6">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-3 px-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 px-2">
             System
           </p>
           <NavItem
@@ -121,22 +118,22 @@ const Sidebar = () => {
       </nav>
 
       {/* Quick Add Section */}
-      <div className="mt-6 border-t border-slate-800/50 pt-6">
+      <div className="mt-6 border-t border-slate-200 dark:border-slate-800/50 pt-6">
         <div className="flex items-center justify-between px-2 mb-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">
             Quick Add
           </p>
           <Plus
             size={14}
-            className="cursor-pointer text-indigo-400 hover:text-white transition-colors"
+            className="cursor-pointer text-indigo-500 hover:text-indigo-600 transition-colors"
           />
         </div>
-        <div className="space-y-3 px-2 text-sm">
-          <button className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors w-full text-left group">
+        <div className="space-y-3 px-2 text-sm font-medium">
+          <button className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors w-full text-left group">
             <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Monthly
             Income
           </button>
-          <button className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors w-full text-left group">
+          <button className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors w-full text-left group">
             <div className="w-2 h-2 rounded-full bg-rose-500"></div> Utilities
             Bill
           </button>
@@ -144,27 +141,26 @@ const Sidebar = () => {
       </div>
 
       {/* User Profile */}
-      <div className="mt-auto flex items-center gap-3 p-2 border-t border-slate-800/50 pt-6">
+      <div className="mt-auto flex items-center gap-3 p-2 border-t border-slate-200 dark:border-slate-800/50 pt-6">
         <div className="relative">
           <img
             src={`https://ui-avatars.com/api/?name=${currentUser?.name || "User"}&background=6366f1&color=fff`}
-            className="w-10 h-10 rounded-xl border border-slate-700 object-cover"
+            className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 object-cover"
             alt="user"
           />
-          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-indigo-500 border-2 border-[#0f1115] rounded-full"></div>
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-indigo-500 border-2 border-white dark:border-[#0f1115] rounded-full"></div>
         </div>
         <div className="overflow-hidden flex-1 ml-1">
-          <p className="text-sm font-bold text-white truncate">
+          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
             {currentUser?.name || "Guest User"}
           </p>
           <p className="text-[10px] truncate text-slate-500 tracking-tight">
             {currentUser?.email || "not logged in"}
           </p>
         </div>
-        {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-400/10 rounded-lg transition-all"
+          className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
           title="Logout"
         >
           <LogOut size={18} />
@@ -174,7 +170,7 @@ const Sidebar = () => {
   );
 };
 
-/* NavItem Component using NavLink for auto-active states */
+/* NavItem Component */
 const NavItem = ({
   icon,
   label,
@@ -193,7 +189,7 @@ const NavItem = ({
       ${
         isActive
           ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-          : "text-slate-500 hover:bg-[#1a1d23] hover:text-white"
+          : "text-slate-500 hover:bg-slate-100 dark:hover:bg-[#1a1d23] hover:text-slate-900 dark:hover:text-white"
       }
     `}
   >
@@ -202,7 +198,7 @@ const NavItem = ({
       <span className="text-sm font-medium">{label}</span>
     </div>
     {badge && (
-      <span className="bg-indigo-500/20 text-indigo-400 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+      <span className="bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
         {badge}
       </span>
     )}

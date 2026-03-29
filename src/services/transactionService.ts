@@ -33,7 +33,7 @@ export const TransactionService = {
         day: "numeric",
         year: "numeric",
       }),
-      amount: `${typeValue === "Income" ? "+" : "-"}$${formData.amount}`,
+      amount: `${typeValue === "Income" ? "+" : "-"}₱${formData.amount}`,
       status: "Completed",
       note: formData.note,
       category: formData.category as Category,

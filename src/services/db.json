@@ -11,17 +11,15 @@
       "email": "gwapa@123.com",
       "password": "123",
       "id": "NwCO3txSMyY"
+    },
+    {
+      "name": "saydon",
+      "email": "saydon@123.com",
+      "password": "123",
+      "id": "HqViksJVMpc"
     }
   ],
   "transactions": [
-    {
-      "id": "#11111",
-      "userId": "GCc_bGf3twk",
-      "note": "Robert's Pizza",
-      "amount": "-$20",
-      "type": "Expense",
-      "category": "Food"
-    },
     {
       "id": "h_a1yiahsz8",
       "userId": "GCc_bGf3twk",

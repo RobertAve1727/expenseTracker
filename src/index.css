@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
+
+/* 1. ENABLE TAILWIND V4 DARK MODE STRATEGY */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Custom colors for your Expense Tracker */
   --color-brand-primary: #3b82f6;
@@ -10,9 +14,10 @@
 }
 
 :root {
+  /* LIGHT MODE VARIABLES */
   --text: #6b6375;
   --text-h: #08060d;
-  --bg: #fff;
+  --bg: #ffffff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
   --accent: #aa3bff;
@@ -41,50 +46,49 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* 2. DARK MODE VARIABLES (Triggered by .dark class) */
+.dark {
+  --text: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #0f1115; /* Matches your Sidebar and Dashboard dark theme */
+  --border: #1e293b;
+  --code-bg: #1f2028;
+  --accent: #c084fc;
+  --accent-bg: rgba(192, 132, 252, 0.15);
+  --accent-border: rgba(192, 132, 252, 0.5);
+  --social-bg: rgba(47, 48, 58, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+}
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+/* 3. GLOBAL STYLES */
+* {
+  box-sizing: border-box;
+  font-family: var(--sans);
+}
+
+body {
+  margin: 0;
+  /* Use variable so it changes when .dark is added to <html> */
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 #root {
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
-  text-align: center;
+  text-align: left;
   border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: #ffffff;
-  font-family: var(--sans);
-}
-
-* {
-  font-family: var(--sans);
-}
-
-#root {
-  background: #ffffff;
+  background: var(--bg); /* Use variable */
+  transition: border-color 0.3s ease;
 }
 
 h1,
@@ -92,6 +96,7 @@ h2 {
   font-family: var(--heading);
   font-weight: 500;
   color: var(--text-h);
+  transition: color 0.3s ease;
 }
 
 h1 {
@@ -103,6 +108,7 @@ h1 {
     margin: 20px 0;
   }
 }
+
 h2 {
   font-size: 24px;
   line-height: 118%;
@@ -112,6 +118,7 @@ h2 {
     font-size: 20px;
   }
 }
+
 p {
   margin: 0;
 }
@@ -129,4 +136,9 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* 4. UTILITY FOR BUTTON ICONS IN DARK MODE */
+.dark #social .button-icon {
+  filter: invert(1) brightness(2);
 }
