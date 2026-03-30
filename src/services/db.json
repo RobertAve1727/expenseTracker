@@ -17,6 +17,12 @@
       "email": "saydon@gmail.com",
       "password": "123",
       "id": "u6GTB52KQo4"
+    },
+    {
+      "name": "Jiyongie",
+      "email": "jiyong@gmail.com",
+      "password": "123",
+      "id": "JEQYRdzdw7I"
     }
   ],
   "transactions": [
@@ -39,6 +45,26 @@
       "status": "Completed",
       "note": "Fuel for motor",
       "category": "Transport"
+    },
+    {
+      "id": "4OWbzXzGMGI",
+      "userId": "JEQYRdzdw7I",
+      "type": "expense",
+      "date": "March 30, 2026",
+      "amount": "850",
+      "status": "Completed",
+      "note": "ACCTG 301",
+      "category": "Acctg Books"
+    },
+    {
+      "id": "g18H9vFhfp8",
+      "userId": "JEQYRdzdw7I",
+      "type": "income",
+      "date": "March 30, 2026",
+      "amount": "1500",
+      "status": "Completed",
+      "note": "Allowance",
+      "category": "Food"
     }
   ],
   "budgets": [
@@ -75,10 +101,21 @@
         "Bills": 0,
         "Entertainment": 0,
         "Pagwapo": 0,
-        "Collectibles": 0,
-        "Gift for loveychi": 0
+        "asdfa": 0
       },
       "id": "y7I66YprezE"
+    },
+    {
+      "userId": "JEQYRdzdw7I",
+      "masterBudget": 5000,
+      "categoryLimits": {
+        "Food": 1000,
+        "Transport": 1000,
+        "Bills": 300,
+        "Entertainment": 1200,
+        "Acctg Books": 1000
+      },
+      "id": "E20kDfekYuo"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

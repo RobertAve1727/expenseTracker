@@ -6,6 +6,7 @@ import {
   List,
   Plus,
   Tag,
+  Trash2,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import AddCategoryModal from "../features/newCategory";
@@ -26,6 +27,7 @@ interface BudgetData {
 const Categories = () => {
   const [viewType, setViewType] = useState<"grid" | "list">("grid");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgetData, setBudgetData] = useState<BudgetData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +51,29 @@ const Categories = () => {
     }
   };
 
+  const handleDeleteCategory = async (categoryName: string) => {
+    if (
+      !budgetData ||
+      !window.confirm(`Permanently delete "${categoryName}" bucket?`)
+    )
+      return;
+
+    const updatedLimits = { ...budgetData.categoryLimits };
+    delete updatedLimits[categoryName];
+
+    try {
+      await fetch(`http://localhost:5000/budgets/${budgetData.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoryLimits: updatedLimits }),
+      });
+      setActiveMenu(null);
+      await fetchData();
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -69,7 +94,7 @@ const Categories = () => {
   if (loading)
     return (
       <div className="p-10 text-center dark:text-white font-black uppercase tracking-widest">
-        Loading Buckets...
+        Syncing Buckets...
       </div>
     );
 
@@ -134,7 +159,7 @@ const Categories = () => {
             return (
               <div
                 key={name}
-                className="bg-white dark:bg-[#1a1d23] p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-none hover:border-indigo-500/30 transition-all group"
+                className="relative bg-white dark:bg-[#1a1d23] p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-none group"
               >
                 <div className="flex justify-between items-start mb-8">
                   <div
@@ -142,18 +167,37 @@ const Categories = () => {
                   >
                     {getIcon(meta.icon)}
                   </div>
-                  <button className="text-slate-300 hover:text-white">
-                    <MoreVertical size={20} />
-                  </button>
+
+                  <div className="relative">
+                    <button
+                      onClick={() =>
+                        setActiveMenu(activeMenu === name ? null : name)
+                      }
+                      className="text-slate-300 hover:text-white"
+                    >
+                      <MoreVertical size={20} />
+                    </button>
+                    {activeMenu === name && (
+                      <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-[#252a33] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                        <button
+                          onClick={() => handleDeleteCategory(name)}
+                          className="w-full flex items-center gap-2 px-4 py-3 text-[10px] font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors uppercase tracking-widest"
+                        >
+                          <Trash2 size={14} /> Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
+
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-1 tracking-tight">
                   {name}
                 </h3>
                 <div className="flex justify-between items-end mb-4 text-sm font-bold">
-                  <span className="text-[10px] text-slate-500 uppercase">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest">
                     Monthly Budget
                   </span>
-                  <span className="dark:text-slate-300">
+                  <span className="dark:text-slate-300 text-xs">
                     ₱{spent.toLocaleString()}{" "}
                     <span className="text-slate-500">
                       / ₱{limit.toLocaleString()}
@@ -167,15 +211,16 @@ const Categories = () => {
                   />
                 </div>
                 <p
-                  className={`text-[10px] font-black uppercase ${isNearLimit ? "text-rose-500 animate-pulse" : "text-slate-400"}`}
+                  className={`text-[10px] font-black uppercase tracking-widest ${isNearLimit ? "text-rose-500 animate-pulse" : "text-slate-400"}`}
                 >
                   {isNearLimit
-                    ? "⚠️ Near Budget Limit"
-                    : `${Math.round(percent)}% of budget used`}
+                    ? "⚠️ Near Limit"
+                    : `${Math.round(percent)}% used`}
                 </p>
               </div>
             );
           })}
+
           <button
             onClick={() => setIsModalOpen(true)}
             className="flex flex-col items-center justify-center p-8 rounded-[3rem] border-4 border-dashed border-slate-200 dark:border-slate-800 text-slate-400 hover:text-indigo-500 transition-all min-h-[250px] group"
