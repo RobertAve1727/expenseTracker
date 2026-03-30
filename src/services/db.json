@@ -5,6 +5,18 @@
       "email": "gwapo@123.com",
       "password": "123",
       "id": "GCc_bGf3twk"
+    },
+    {
+      "name": "quiela",
+      "email": "quiela@gmail.com",
+      "password": "123",
+      "id": "OQlRbIca42A"
+    },
+    {
+      "name": "quiela",
+      "email": "quiela@gmail.com",
+      "password": "123",
+      "id": "jWxOUCKuVvE"
     }
   ],
   "transactions": [
@@ -17,19 +29,40 @@
       "status": "Completed",
       "note": "2 pc carlitos",
       "category": "Food"
+    },
+    {
+      "id": "dzyhUGcHCck",
+      "userId": "GCc_bGf3twk",
+      "type": "Expense",
+      "date": "March 30, 2026",
+      "amount": "-₱350",
+      "status": "Completed",
+      "note": "mix n match jabee",
+      "category": "Food"
     }
   ],
   "budgets": [
     {
       "userId": "GCc_bGf3twk",
-      "masterBudget": 2500,
+      "masterBudget": 1500,
       "categoryLimits": {
-        "Food": 600,
+        "Food": 500,
         "Transport": 300,
         "Bills": 300,
-        "Entertainment": 300
+        "Entertainment": 100
       },
       "id": "HtALgs8J7MY"
+    },
+    {
+      "userId": "OQlRbIca42A",
+      "masterBudget": 12315,
+      "categoryLimits": {
+        "Food": 0,
+        "Transport": 0,
+        "Bills": 0,
+        "Entertainment": 0
+      },
+      "id": "SqO-tuPzs-g"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
