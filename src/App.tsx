@@ -8,10 +8,11 @@ import {
 } from "react-router-dom";
 import Login from "./components/login";
 import Register from "./components/register";
-import Dashboard from "./components/dashboard"; // Ensure path is correct
+import Dashboard from "./components/dashboard";
 import TransactionPage from "./components/transaction";
 import SettingsPage from "./components/settings";
 import BudgetLimit from "./features/budgetLimit";
+import CategoryPage from "./components/category"; // [!code ++] Ensure name matches your export
 import Sidebar from "./components/sidebar";
 import "./App.css";
 
@@ -24,10 +25,6 @@ const AppLayout = () => {
   return (
     <div className="flex bg-white dark:bg-[#0f1115] h-screen overflow-hidden transition-colors duration-300">
       <Sidebar />
-      {/* MAIN SCROLL CONTAINER 
-          - h-screen + overflow-y-auto ensures only this area scrolls.
-          - The custom scrollbar matches the dark theme.
-      */}
       <main
         className="flex-1 h-screen overflow-y-auto 
         [&::-webkit-scrollbar]:w-2
@@ -64,8 +61,11 @@ function App() {
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<TransactionPage />} />
+            <Route path="/categories" element={<CategoryPage />} /> // [!code
+            ++]
             <Route path="/budget" element={<BudgetLimit />} />
             <Route path="/settings" element={<SettingsPage />} />
+            {/* Catch-all for protected routes */}
             <Route index element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Route>
