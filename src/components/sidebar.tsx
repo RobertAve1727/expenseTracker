@@ -5,7 +5,6 @@ import {
   ArrowUpDown,
   PieChart,
   Target,
-  Plus,
   Search,
   LogOut,
   Bell,
@@ -20,7 +19,6 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  // FIX: Changed key from 'zb_user' to 'user' to stay consistent with your original logic
   const savedUser = user || JSON.parse(localStorage.getItem("user") || "null");
 
   const handleLogout = (e: React.MouseEvent) => {
@@ -30,11 +28,21 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-white dark:bg-[#0f1115] text-slate-500 dark:text-slate-400 flex flex-col p-6 border-r border-slate-200 dark:border-slate-800/50 h-screen sticky top-0 font-sans transition-colors duration-300">
+    <aside
+      className="w-64 bg-white dark:bg-[#0f1115] text-slate-500 dark:text-slate-400 flex flex-col p-6 border-r border-slate-200 dark:border-slate-800/50 h-screen sticky top-0 font-sans transition-colors duration-300
+      /* Custom Scrollbar Logic */
+      overflow-y-auto
+      [&::-webkit-scrollbar]:w-1.5
+      [&::-webkit-scrollbar-track]:bg-transparent
+      [&::-webkit-scrollbar-thumb]:bg-slate-200
+      dark:[&::-webkit-scrollbar-thumb]:bg-slate-800
+      [&::-webkit-scrollbar-thumb]:rounded-full
+      hover:[&::-webkit-scrollbar-thumb]:bg-indigo-500/50"
+    >
       {/* Brand Logo */}
       <Link
         to="/dashboard"
-        className="flex items-center gap-3 text-slate-900 dark:text-white mb-8 px-2"
+        className="flex items-center gap-3 text-slate-900 dark:text-white mb-8 px-2 flex-shrink-0"
       >
         <div className="bg-[#6366f1] p-1.5 rounded-lg shadow-lg shadow-indigo-500/20">
           <div className="w-5 h-5 border-2 border-white rotate-45 flex items-center justify-center">
@@ -45,7 +53,7 @@ const Sidebar = () => {
       </Link>
 
       {/* Search Bar */}
-      <div className="relative mb-6">
+      <div className="relative mb-6 flex-shrink-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
         <input
           type="text"
@@ -55,7 +63,7 @@ const Sidebar = () => {
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
+      <nav className="flex-1 space-y-1 pr-2">
         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 px-2">
           Overview
         </p>
@@ -80,7 +88,7 @@ const Sidebar = () => {
             Planning & Analytics
           </p>
           <NavItem
-            to="/budget" // [!code hl]
+            to="/budget"
             icon={<Target size={18} />}
             label="Budget Limits"
           />
@@ -119,31 +127,8 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      {/* Quick Add Section */}
-      <div className="mt-6 border-t border-slate-200 dark:border-slate-800/50 pt-6">
-        <div className="flex items-center justify-between px-2 mb-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">
-            Quick Add
-          </p>
-          <Plus
-            size={14}
-            className="cursor-pointer text-indigo-500 hover:text-indigo-600 transition-colors"
-          />
-        </div>
-        <div className="space-y-3 px-2 text-sm font-medium">
-          <button className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors w-full text-left group">
-            <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Monthly
-            Income
-          </button>
-          <button className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors w-full text-left group">
-            <div className="w-2 h-2 rounded-full bg-rose-500"></div> Utilities
-            Bill
-          </button>
-        </div>
-      </div>
-
-      {/* User Profile */}
-      <div className="mt-auto flex items-center gap-3 p-2 border-t border-slate-200 dark:border-slate-800/50 pt-6">
+      {/* User Profile - Fixed to bottom even when scrolling */}
+      <div className="mt-auto flex items-center gap-3 p-2 border-t border-slate-200 dark:border-slate-800/50 pt-6 flex-shrink-0 bg-white dark:bg-[#0f1115]">
         <div className="relative">
           <img
             src={`https://ui-avatars.com/api/?name=${savedUser?.name || "User"}&background=6366f1&color=fff`}

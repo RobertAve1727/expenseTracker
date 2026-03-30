@@ -39,6 +39,26 @@
       "status": "Completed",
       "note": "mix n match jabee",
       "category": "Food"
+    },
+    {
+      "id": "6Rtpk0Z163I",
+      "userId": "OQlRbIca42A",
+      "type": "Income",
+      "date": "March 30, 2026",
+      "amount": "+₱125",
+      "status": "Completed",
+      "note": "asdfa",
+      "category": "Transport"
+    },
+    {
+      "id": "Z1yG0WZeE4A",
+      "userId": "GCc_bGf3twk",
+      "type": "income",
+      "date": "March 30, 2026",
+      "amount": "500",
+      "status": "Completed",
+      "note": "allowance",
+      "category": "Income"
     }
   ],
   "budgets": [
@@ -55,9 +75,9 @@
     },
     {
       "userId": "OQlRbIca42A",
-      "masterBudget": 12315,
+      "masterBudget": 1500,
       "categoryLimits": {
-        "Food": 0,
+        "Food": 4500,
         "Transport": 0,
         "Bills": 0,
         "Entertainment": 0

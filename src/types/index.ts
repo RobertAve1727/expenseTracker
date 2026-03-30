@@ -1,11 +1,3 @@
-export type Category =
-  | "Food"
-  | "Transport"
-  | "Bills"
-  | "Entertainment"
-  | "Income"
-  | "Custom";
-
 export interface User {
   id: string;
   email: string;
@@ -16,22 +8,17 @@ export interface User {
 export interface Transaction {
   id: string;
   userId: string | number;
-  type: "Income" | "Expense";
+  type: "income" | "expense"; // Unified to lowercase for easier matching
   date: string;
   amount: string;
   status: string;
   note: string;
-  category: Category;
+  category: string; // Dynamic string
 }
 
 export interface Budget {
   id?: string;
   userId: string;
   masterBudget: number;
-  categoryLimits: {
-    Food: number;
-    Transport: number;
-    Bills: number;
-    Entertainment: number;
-  };
+  categoryLimits: Record<string, number>; // Supports any category name
 }

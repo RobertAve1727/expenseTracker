@@ -3,6 +3,16 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/* --- GLOBAL SCROLLBAR KILLER --- */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* This removes the outer white scrollbar */
+}
+
 @theme {
   --color-brand-primary: #3b82f6;
   --color-income: #22c55e;
@@ -29,8 +39,6 @@
   --bg: #0f1115;
   --border: #1e293b;
 }
-
-/* ... existing root/auth-container styles ... */
 
 /* --- NEW: PURE TYPING INPUTS (NO ARROWS) --- */
 @layer base {

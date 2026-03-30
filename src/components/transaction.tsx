@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -12,8 +12,9 @@ import {
   Lightbulb,
   ShoppingBag,
   Clock,
+  Tag,
 } from "lucide-react";
-import type { Transaction } from "../types/index";
+import type { Transaction } from "../types";
 import { TransactionService } from "../services/transactionService";
 import AddTransactionModal from "../features/addTransaction";
 import DeleteConfirmModal from "../features/deleteTransaction";
@@ -24,12 +25,10 @@ const TransactionPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("All");
-
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [txToDelete, setTxToDelete] = useState<string | null>(null);
 
-  const savedUser = localStorage.getItem("user");
-  const currentUser = savedUser ? JSON.parse(savedUser) : null;
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
   const currentUserId = currentUser?.id;
 
   useEffect(() => {
@@ -40,7 +39,7 @@ const TransactionPage: React.FC = () => {
     const loadData = async () => {
       try {
         const data = await TransactionService.getAllByUserId(currentUserId);
-        setTransactions(data);
+        setTransactions(data || []);
       } catch (err) {
         console.error(err);
       }
@@ -48,22 +47,11 @@ const TransactionPage: React.FC = () => {
     loadData();
   }, [currentUserId, navigate]);
 
-  const openDeleteConfirm = (id: string) => {
-    setTxToDelete(id);
-    setIsDeleteModalOpen(true);
-  };
-
-  const executeDelete = async () => {
-    if (!txToDelete) return;
-    try {
-      await TransactionService.delete(txToDelete);
-      setTransactions(transactions.filter((t) => t.id !== txToDelete));
-      setIsDeleteModalOpen(false);
-      setTxToDelete(null);
-    } catch (err) {
-      console.error("Delete failed", err);
-    }
-  };
+  // Dynamically extract unique categories for the filter
+  const dynamicCategories = useMemo(() => {
+    const fromData = transactions.map((t) => t.category);
+    return Array.from(new Set(["Food", "Transport", "Bills", ...fromData]));
+  }, [transactions]);
 
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch = (t.note || "")
@@ -84,151 +72,137 @@ const TransactionPage: React.FC = () => {
       case "Bills":
         return <Lightbulb size={iconSize} />;
       default:
-        return <ShoppingBag size={iconSize} />;
+        return <Tag size={iconSize} />;
     }
   };
 
-  return (
-    <div className="flex-1 p-6 lg:p-10 bg-slate-50 dark:bg-[#0f1115] min-h-screen font-sans transition-colors duration-300">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Transactions
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 flex items-center gap-2 font-medium">
-            <Clock size={14} className="text-indigo-500" /> History for:{" "}
-            <span className="text-indigo-600 dark:text-[#6366f1]">
-              {currentUser?.name || "Guest"}
-            </span>
-          </p>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-indigo-600 dark:bg-[#6366f1] hover:bg-indigo-700 dark:hover:bg-[#5558e3] text-white px-7 py-3.5 rounded-2xl font-bold transition-all active:scale-95 shadow-xl shadow-indigo-500/20"
-        >
-          <Plus size={20} strokeWidth={3} /> Add Transaction
-        </button>
-      </div>
+  const formatCurrency = (amount: string | number) => {
+    const numericValue =
+      Math.abs(parseFloat(amount.toString().replace(/[^\d.-]/g, ""))) || 0;
+    return numericValue.toLocaleString();
+  };
 
-      {/* Filters Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="relative md:col-span-2 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search by note..."
-            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[20px] text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="relative">
-          <select
-            className="w-full appearance-none px-6 py-4 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[20px] text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm font-medium"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
+  return (
+    <div className="flex-1 p-6 lg:p-10 bg-slate-50 dark:bg-[#0f1115] min-h-screen transition-colors duration-300">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Ledger
+            </h1>
+            <p className="text-slate-500 text-sm mt-1 font-bold uppercase tracking-widest flex items-center gap-2">
+              <Clock size={14} className="text-indigo-500" />{" "}
+              {currentUser?.name}'s Stream
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 bg-indigo-600 dark:bg-[#6366f1] text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-indigo-500/20 active:scale-95 transition-all"
           >
-            <option value="All">All Categories</option>
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Bills">Bills</option>
-            <option value="Income">Income</option>
-          </select>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-            <Filter size={16} />
+            <Plus size={20} strokeWidth={3} /> New Entry
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="relative md:col-span-2 group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors w-5 h-5" />
+            <input
+              placeholder="Search descriptions..."
+              className="w-full pl-14 pr-4 py-4 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[24px] outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-bold"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="relative">
+            <select
+              className="w-full px-6 py-4 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[24px] outline-none appearance-none font-bold text-indigo-500"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              <option value="All">All Categories</option>
+              {dynamicCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            <Filter
+              size={16}
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
           </div>
         </div>
-      </div>
 
-      {/* Table Container */}
-      <div className="bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800/50 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800/50 rounded-[3rem] overflow-hidden shadow-2xl">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-slate-800/50 text-slate-400 dark:text-slate-500 text-[11px] uppercase tracking-[0.15em]">
-                <th className="px-8 py-6 font-bold">Details</th>
-                <th className="px-8 py-6 font-bold">Category</th>
-                <th className="px-8 py-6 font-bold">Date</th>
-                <th className="px-8 py-6 font-bold">Amount</th>
-                <th className="px-8 py-6 font-bold text-right">Action</th>
+              <tr className="border-b border-slate-50 dark:border-slate-800/50 text-slate-400 text-[10px] uppercase font-black tracking-[0.2em]">
+                <th className="px-10 py-8">Label</th>
+                <th className="px-10 py-8">Segment</th>
+                <th className="px-10 py-8">Timestamp</th>
+                <th className="px-10 py-8">Value</th>
+                <th className="px-10 py-8 text-right">Delete</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/30">
+            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/20">
               {filteredTransactions.map((item) => (
                 <tr
                   key={item.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors group"
+                  className="hover:bg-slate-50/50 dark:hover:bg-indigo-500/5 transition-colors group"
                 >
-                  <td className="px-8 py-5">
+                  <td className="px-10 py-6">
                     <div className="flex items-center gap-4">
                       <div
-                        className={`p-3 rounded-2xl ${
-                          item.type === "Income"
-                            ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500"
-                            : "bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-500"
-                        }`}
+                        className={`p-3 rounded-2xl ${item.type === "income" ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}
                       >
-                        {item.type === "Income" ? (
+                        {item.type === "income" ? (
                           <ArrowDownLeft size={18} />
                         ) : (
                           <ArrowUpRight size={18} />
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-[#6366f1] transition-colors">
-                          {item.note || "General Transaction"}
+                        <p className="text-sm font-black dark:text-white">
+                          {item.note || "General"}
                         </p>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-widest">
+                        <p className="text-[10px] text-slate-500 font-bold uppercase">
                           {item.type}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-5">
-                    <span className="inline-flex items-center gap-2 text-[11px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/50 uppercase">
+                  <td className="px-10 py-6">
+                    <span className="flex items-center gap-2 text-[10px] font-black uppercase text-indigo-500 bg-indigo-500/5 px-4 py-2 rounded-xl border border-indigo-500/10 w-fit">
                       {getIcon(item.category)} {item.category}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  <td className="px-10 py-6 text-xs text-slate-500 font-bold">
                     {item.date}
                   </td>
                   <td
-                    className={`px-8 py-5 font-black text-sm ${
-                      item.type === "Income"
-                        ? "text-emerald-500"
-                        : "text-slate-900 dark:text-white"
-                    }`}
+                    className={`px-10 py-6 font-black text-sm ${item.type === "income" ? "text-emerald-500" : "dark:text-white"}`}
                   >
-                    {item.type === "Income" ? "+" : "-"}$
-                    {item.amount.toLocaleString()}
+                    {item.type === "income" ? "+" : "-"}₱
+                    {formatCurrency(item.amount)}
                   </td>
-                  <td className="px-8 py-5 text-right">
+                  <td className="px-10 py-6 text-right">
                     <button
-                      onClick={() => openDeleteConfirm(item.id)}
-                      className="p-2.5 text-slate-300 dark:text-slate-700 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-400/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                      onClick={() => {
+                        setTxToDelete(item.id);
+                        setIsDeleteModalOpen(true);
+                      }}
+                      className="p-3 text-slate-300 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100"
                     >
                       <Trash2 size={18} />
                     </button>
                   </td>
                 </tr>
               ))}
-              {filteredTransactions.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-8 py-20 text-center text-slate-400 dark:text-slate-600 font-medium"
-                  >
-                    No transactions found.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* --- MODALS --- */}
       <AddTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -239,7 +213,12 @@ const TransactionPage: React.FC = () => {
       <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={executeDelete}
+        onConfirm={async () => {
+          if (!txToDelete) return;
+          await TransactionService.delete(txToDelete);
+          setTransactions(transactions.filter((t) => t.id !== txToDelete));
+          setIsDeleteModalOpen(false);
+        }}
       />
     </div>
   );
