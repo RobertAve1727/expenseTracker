@@ -1,158 +1,232 @@
+import { useEffect, useState, useMemo } from "react";
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
-import { ArrowUpRight } from "lucide-react";
-
-const revenueData = [
-  { name: "Jan", current: 4000, projection: 5000 },
-  { name: "Feb", current: 3000, projection: 8000 },
-  { name: "Mar", current: 6000, projection: 5500 },
-  { name: "Apr", current: 2780, projection: 6000 },
-  { name: "Jun", current: 1890, projection: 4800 },
-  { name: "Jul", current: 2390, projection: 3800 },
-];
-
-const expenseData = [
-  { name: "Goods", value: 23500, color: "#0EA5E9" },
-  { name: "General", value: 17500, color: "#7C3AED" },
-  { name: "Other", value: 12500, color: "#2DD4BF" },
-  { name: "Fees", value: 4500, color: "#F43F5E" },
-];
+import { ArrowUpRight, Loader2, AlertCircle } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { TransactionService } from "../services/transactionService";
+import type { Transaction } from "../types";
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      // Check for user.id specifically as that's what the service needs
+      const currentUserId =
+        user?.id || JSON.parse(localStorage.getItem("user") || "{}")?.id;
+
+      if (!currentUserId) return;
+
+      try {
+        setIsLoading(true);
+        const data = await TransactionService.getAllByUserId(currentUserId);
+        setTransactions(data || []);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [user?.id]);
+
+  const parseAmount = (amountStr: any) => {
+    if (typeof amountStr === "number") return Math.abs(amountStr);
+    if (!amountStr) return 0;
+    return (
+      Math.abs(parseFloat(amountStr.toString().replace(/[^\d.-]/g, ""))) || 0
+    );
+  };
+
+  const totals = useMemo(() => {
+    let income = 0;
+    let expense = 0;
+
+    transactions.forEach((t) => {
+      const val = parseAmount(t.amount);
+      if (t.type === "Income") income += val;
+      else expense += val;
+    });
+
+    return {
+      income: `₱${income.toLocaleString()}`,
+      expense: `₱${expense.toLocaleString()}`,
+      rawExpense: expense,
+    };
+  }, [transactions]);
+
+  // Data for Bar Chart: Sort by date and take last 6
+  const barChartData = useMemo(() => {
+    return [...transactions]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-6)
+      .map((t) => ({
+        ...t,
+        displayAmount: parseAmount(t.amount),
+      }));
+  }, [transactions]);
+
+  const categoryPieData = useMemo(() => {
+    const groups: Record<string, number> = {};
+    transactions
+      .filter((t) => t.type === "Expense")
+      .forEach((t) => {
+        groups[t.category] = (groups[t.category] || 0) + parseAmount(t.amount);
+      });
+
+    const colors = [
+      "#6366f1",
+      "#a855f7",
+      "#ec4899",
+      "#f43f5e",
+      "#eab308",
+      "#22c55e",
+    ];
+    return Object.entries(groups).map(([name, value], index) => ({
+      name,
+      value,
+      color: colors[index % colors.length],
+    }));
+  }, [transactions]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 dark:bg-[#0f1115]">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-[#0f1115] transition-colors duration-300">
-      <main className="flex-1 p-6 lg:p-10 w-full">
+      <main className="flex-1 p-6 lg:p-10 w-full max-w-7xl mx-auto">
         <header className="flex justify-between items-center mb-10">
           <div>
             <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              Welcome, Capital M 👋
+              Welcome, {user?.name || "Guest"} 👋
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-              Here's your store's performance.
+              Your financial health at a glance.
             </p>
-          </div>
-          <div className="flex gap-3">
-            <button className="bg-white dark:bg-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl px-5 py-2.5 text-sm font-bold shadow-sm">
-              6 Months
-            </button>
           </div>
         </header>
 
-        {/* FULL WIDTH GRID */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 w-full">
-          <section className="xl:col-span-2 bg-white dark:bg-slate-900/50 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800">
-            <h3 className="text-xl font-bold dark:text-white mb-8">Revenue</h3>
+          {/* Main Bar Chart Section */}
+          <section className="xl:col-span-2 bg-white dark:bg-slate-900/50 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+            <h3 className="text-xl font-bold dark:text-white mb-8">
+              Recent Activity
+            </h3>
             <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData}>
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#94a3b8" }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#94a3b8" }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "16px",
-                      border: "none",
-                      backgroundColor: "#1e293b",
-                      color: "#fff",
-                    }}
-                  />
-                  <Bar
-                    dataKey="current"
-                    fill="#1e3a8a"
-                    radius={[6, 6, 0, 0]}
-                    barSize={20}
-                  />
-                  <Bar
-                    dataKey="projection"
-                    fill="#60a5fa"
-                    radius={[6, 6, 0, 0]}
-                    barSize={20}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              {barChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barChartData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#e2e8f0"
+                      opacity={0.1}
+                    />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: "#94a3b8", fontSize: 12 }}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: "#94a3b8", fontSize: 12 }}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "transparent" }}
+                      contentStyle={{
+                        borderRadius: "16px",
+                        border: "none",
+                        backgroundColor: "#1e293b",
+                        color: "#fff",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                      }}
+                    />
+                    <Bar
+                      dataKey="displayAmount"
+                      name="Amount"
+                      fill="#6366f1"
+                      radius={[6, 6, 0, 0]}
+                      barSize={32}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <NoDataPlaceholder message="No recent transactions found" />
+              )}
             </div>
           </section>
 
+          {/* Metric Cards */}
           <div className="flex flex-col gap-6">
             <MetricCard
-              label="Total Projection"
-              value="$500K"
-              color="bg-blue-50 dark:bg-blue-500/10 text-blue-600"
+              label="Total Expenses"
+              value={totals.expense}
+              color="bg-rose-50 dark:bg-rose-500/10 text-rose-600"
             />
             <MetricCard
-              label="Current Revenue"
-              value="$250K"
-              color="bg-purple-50 dark:bg-purple-500/10 text-purple-600"
+              label="Total Income"
+              value={totals.income}
+              color="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600"
             />
           </div>
 
-          <section className="xl:col-span-2 bg-white dark:bg-slate-900/50 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800">
-            <h3 className="text-xl font-bold dark:text-white mb-8">Cashflow</h3>
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="#f1f5f9"
-                  />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="current"
-                    stroke="#3b82f6"
-                    strokeWidth={4}
-                    dot={{ r: 6, fill: "#3b82f6" }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
-
-          <section className="bg-white dark:bg-slate-900/50 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 flex flex-col items-center">
+          {/* Expenses Pie Chart */}
+          <section className="bg-white dark:bg-slate-900/50 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center">
             <h3 className="text-xl font-bold w-full mb-8 dark:text-white">
-              Expenses
+              Distribution
             </h3>
-            <div className="relative h-[220px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={expenseData}
-                    innerRadius={70}
-                    outerRadius={95}
-                    paddingAngle={8}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {expenseData.map((entry, index) => (
-                      <Cell key={index} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-3xl font-black dark:text-white">$80K</p>
-              </div>
+            <div className="relative h-[280px] w-full">
+              {categoryPieData.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryPieData}
+                        innerRadius={80}
+                        outerRadius={105}
+                        paddingAngle={8}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {categoryPieData.map((entry, index) => (
+                          <Cell key={index} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      Total Out
+                    </p>
+                    <p className="text-2xl font-black dark:text-white">
+                      ₱{totals.rawExpense.toLocaleString()}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <NoDataPlaceholder message="No expense data" />
+              )}
             </div>
           </section>
         </div>
@@ -162,12 +236,12 @@ const Dashboard = () => {
 };
 
 const MetricCard = ({ label, value, color }: any) => (
-  <div className="bg-white dark:bg-slate-900/50 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:border-blue-400 transition-all">
+  <div className="bg-white dark:bg-slate-900/50 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:shadow-md transition-all">
     <div>
-      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
+      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-widest">
         {label}
       </p>
-      <h3 className="text-4xl font-black dark:text-white tracking-tight">
+      <h3 className="text-3xl font-black dark:text-white tracking-tight">
         {value}
       </h3>
     </div>
@@ -176,6 +250,13 @@ const MetricCard = ({ label, value, color }: any) => (
     >
       <ArrowUpRight size={28} />
     </div>
+  </div>
+);
+
+const NoDataPlaceholder = ({ message }: { message: string }) => (
+  <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-2">
+    <AlertCircle size={24} className="opacity-20" />
+    <span className="italic text-sm">{message}</span>
   </div>
 );
 

@@ -1,3 +1,4 @@
+import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -13,22 +14,23 @@ import {
   FolderTree,
   TrendingUp,
 } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const savedUser = localStorage.getItem("user");
-  const currentUser = savedUser ? JSON.parse(savedUser) : null;
+  // FIX: Changed key from 'zb_user' to 'user' to stay consistent with your original logic
+  const savedUser = user || JSON.parse(localStorage.getItem("user") || "null");
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
-    localStorage.removeItem("user");
+    logout();
     navigate("/login");
   };
 
   return (
-    /* UPDATED: Added bg-white and dark:bg-[#0f1115] for theme support */
-    <aside className="w-64 bg-white dark:bg-[#0f1115] text-slate-500 dark:text-slate-400 flex flex-col p-6 border-r border-slate-200 dark:border-slate-800/50 h-screen sticky top-0 font-['Rubik'] transition-colors duration-300">
+    <aside className="w-64 bg-white dark:bg-[#0f1115] text-slate-500 dark:text-slate-400 flex flex-col p-6 border-r border-slate-200 dark:border-slate-800/50 h-screen sticky top-0 font-sans transition-colors duration-300">
       {/* Brand Logo */}
       <Link
         to="/dashboard"
@@ -144,7 +146,7 @@ const Sidebar = () => {
       <div className="mt-auto flex items-center gap-3 p-2 border-t border-slate-200 dark:border-slate-800/50 pt-6">
         <div className="relative">
           <img
-            src={`https://ui-avatars.com/api/?name=${currentUser?.name || "User"}&background=6366f1&color=fff`}
+            src={`https://ui-avatars.com/api/?name=${savedUser?.name || "User"}&background=6366f1&color=fff`}
             className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 object-cover"
             alt="user"
           />
@@ -152,10 +154,10 @@ const Sidebar = () => {
         </div>
         <div className="overflow-hidden flex-1 ml-1">
           <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
-            {currentUser?.name || "Guest User"}
+            {savedUser?.name || "Guest User"}
           </p>
           <p className="text-[10px] truncate text-slate-500 tracking-tight">
-            {currentUser?.email || "not logged in"}
+            {savedUser?.email || "not logged in"}
           </p>
         </div>
         <button
@@ -170,7 +172,6 @@ const Sidebar = () => {
   );
 };
 
-/* NavItem Component */
 const NavItem = ({
   icon,
   label,

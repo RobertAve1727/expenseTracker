@@ -1,7 +1,11 @@
-// hooks/useAuth.ts
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const useAuth = () => {
+  const [user, setUser] = useState<any>(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -9,13 +13,19 @@ export const useAuth = () => {
     setIsLoading(true);
     setError("");
     try {
+      // Fetching your local users array
       const response = await fetch("http://localhost:5000/users");
       const users = await response.json();
-      const user = users.find(
+      const foundUser = users.find(
         (u: any) => u.email === email && u.password === password,
       );
 
-      if (user) return user;
+      if (foundUser) {
+        setUser(foundUser);
+        // Using the original "user" key
+        localStorage.setItem("user", JSON.stringify(foundUser));
+        return foundUser;
+      }
 
       setError("Invalid email or password.");
       return null;
@@ -27,5 +37,10 @@ export const useAuth = () => {
     }
   };
 
-  return { verifyUser, error, isLoading };
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+  };
+
+  return { user, verifyUser, logout, error, isLoading };
 };

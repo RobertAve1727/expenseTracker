@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"; // Added useEffect
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,10 +14,14 @@ import SettingsPage from "./components/settings";
 import Sidebar from "./components/sidebar";
 import "./App.css";
 
-// Layout for pages that REQUIRE the Sidebar
+// This checks if the user is logged in before allowing them into the app
+const ProtectedRoute = () => {
+  const isAuthenticated = localStorage.getItem("user");
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+};
+
 const AppLayout = () => {
   return (
-    /* Updated background classes to support theme switching */
     <div className="flex bg-white dark:bg-[#0f1115] min-h-screen transition-colors duration-300">
       <Sidebar />
       <main className="flex-1 h-screen overflow-y-auto">
@@ -28,7 +32,6 @@ const AppLayout = () => {
 };
 
 function App() {
-  // --- THEME PERSISTENCE LOGIC ---
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
@@ -41,23 +44,31 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Auth Routes (No Sidebar) */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Protected Application Routes (With Sidebar) */}
-        <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/transactions" element={<TransactionPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-
-          {/* Default dashboard as index */}
-          <Route index element={<Navigate to="/dashboard" />} />
+        {/* Protected Section */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/transactions" element={<TransactionPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
+          </Route>
         </Route>
 
         {/* Global Redirects */}
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route
+          path="/"
+          element={
+            localStorage.getItem("user") ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

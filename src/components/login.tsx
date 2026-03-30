@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Sun, Moon } from "lucide-react"; // Added Sun/Moon icons
+import { Mail, Lock, Sun, Moon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaGithub } from "react-icons/fa";
 import logoUrl from "../assets/logo.png";
@@ -9,7 +9,6 @@ import { useAuth } from "../hooks/useAuth";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
 
   // --- THEME STATE ---
   const [isDark, setIsDark] = useState(() => {
@@ -36,8 +35,7 @@ const Login = () => {
     e.preventDefault();
     const user = await verifyUser(email, password);
     if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-      // The theme is already in localStorage, so Dashboard will pick it up
+      // Note: useAuth now handles saving 'zb_user' to localStorage internally
       navigate("/dashboard");
     }
   };
@@ -72,9 +70,9 @@ const Login = () => {
                 </h1>
 
                 {error && (
-                  <p className="mt-4 text-xs font-bold text-red-500 bg-red-50 dark:bg-red-900/20 p-2 rounded-lg border border-red-100 dark:border-red-900/30">
+                  <div className="mt-4 text-xs font-bold text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
                     {error}
-                  </p>
+                  </div>
                 )}
 
                 <form onSubmit={handleSignIn} className="mt-10 space-y-5">
@@ -115,7 +113,7 @@ const Login = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-3 px-4 bg-[#1A1A1A] dark:bg-indigo-600 text-white rounded-xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
+                    className="w-full py-3 px-4 bg-[#1A1A1A] dark:bg-indigo-600 text-white rounded-xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-lg flex justify-center items-center"
                   >
                     {isLoading ? "Verifying..." : "Sign in"}
                   </button>
@@ -164,7 +162,7 @@ const Login = () => {
                     <h3 className="text-[#D8C79C] font-bold mb-4">
                       ZeroBalance
                     </h3>
-                    <h2 className="text-4xl font-bold text-[#D8C79C]! mb-4 leading-tight">
+                    <h2 className="text-4xl font-bold text-[#D8C79C] mb-4 leading-tight">
                       Welcome to ZeroBalance
                     </h2>
                     <p className="text-white text-sm max-w-md leading-relaxed">
