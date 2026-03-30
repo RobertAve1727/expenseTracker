@@ -1,88 +1,45 @@
 {
   "users": [
     {
-      "name": "robert",
-      "email": "gwapo@123.com",
+      "name": "Robert Avelino",
+      "email": "robert@gmail.com",
       "password": "123",
-      "id": "GCc_bGf3twk"
-    },
-    {
-      "name": "quiela",
-      "email": "quiela@gmail.com",
-      "password": "123",
-      "id": "OQlRbIca42A"
-    },
-    {
-      "name": "quiela",
-      "email": "quiela@gmail.com",
-      "password": "123",
-      "id": "jWxOUCKuVvE"
+      "id": "L4QIW7RbHQM"
     }
   ],
   "transactions": [
     {
-      "id": "KGGhMBoPJEk",
-      "userId": "GCc_bGf3twk",
-      "type": "Expense",
+      "id": "zZTCjzg7s-4",
+      "userId": "L4QIW7RbHQM",
+      "type": "expense",
       "date": "March 30, 2026",
-      "amount": "-₱100",
+      "amount": "85",
       "status": "Completed",
-      "note": "2 pc carlitos",
+      "note": "siomai wid loveychi",
       "category": "Food"
     },
     {
-      "id": "dzyhUGcHCck",
-      "userId": "GCc_bGf3twk",
-      "type": "Expense",
+      "id": "Jq77sTSGNBs",
+      "userId": "L4QIW7RbHQM",
+      "type": "expense",
       "date": "March 30, 2026",
-      "amount": "-₱350",
+      "amount": "150",
       "status": "Completed",
-      "note": "mix n match jabee",
-      "category": "Food"
-    },
-    {
-      "id": "6Rtpk0Z163I",
-      "userId": "OQlRbIca42A",
-      "type": "Income",
-      "date": "March 30, 2026",
-      "amount": "+₱125",
-      "status": "Completed",
-      "note": "asdfa",
+      "note": "Fuel for motor",
       "category": "Transport"
-    },
-    {
-      "id": "Z1yG0WZeE4A",
-      "userId": "GCc_bGf3twk",
-      "type": "income",
-      "date": "March 30, 2026",
-      "amount": "500",
-      "status": "Completed",
-      "note": "allowance",
-      "category": "Income"
     }
   ],
   "budgets": [
     {
-      "userId": "GCc_bGf3twk",
-      "masterBudget": 1500,
+      "userId": "L4QIW7RbHQM",
+      "masterBudget": 5000,
       "categoryLimits": {
-        "Food": 500,
-        "Transport": 300,
-        "Bills": 300,
-        "Entertainment": 100
+        "Food": 1500,
+        "Transport": 1000,
+        "Bills": 500,
+        "Entertainment": 2000
       },
-      "id": "HtALgs8J7MY"
-    },
-    {
-      "userId": "OQlRbIca42A",
-      "masterBudget": 1500,
-      "categoryLimits": {
-        "Food": 4500,
-        "Transport": 0,
-        "Bills": 0,
-        "Entertainment": 0
-      },
-      "id": "SqO-tuPzs-g"
+      "id": "eOgOfGqy1wk"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

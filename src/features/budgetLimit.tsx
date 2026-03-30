@@ -65,7 +65,7 @@ const BudgetLimit = () => {
     let grandTotalSpent = 0;
 
     transactions.forEach((t) => {
-      if (t.type !== "Expense") return;
+      if (t.type !== "expense") return;
       // Clean numeric formatting (e.g., "-₱300" -> 300)
       const amt =
         Math.abs(parseFloat(t.amount.toString().replace(/[^\d.-]/g, ""))) || 0;
