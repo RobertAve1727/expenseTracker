@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { X, DollarSign, Calendar, ChevronDown, Plus, Type } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { X, DollarSign, ChevronDown } from "lucide-react";
 import type { Transaction } from "../types";
 import { TransactionService } from "../services/transactionService";
 
@@ -17,14 +17,40 @@ const AddTransactionModal: React.FC<Props> = ({
   userId,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     amount: "",
-    category: "Food",
+    category: "", // Initialized as empty to be set once categories load
     date: new Date().toISOString().split("T")[0],
     note: "",
     type: "expense",
   });
+
+  // Fetch your dynamic categories from the budget database
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/budgets?userId=${userId}`,
+        );
+        const data = await res.json();
+        if (data[0] && data[0].categoryLimits) {
+          const categories = Object.keys(data[0].categoryLimits);
+          setAvailableCategories(categories);
+          // Set default selection to the first available category
+          if (categories.length > 0) {
+            setFormData((prev) => ({ ...prev, category: categories[0] }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to sync categories:", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen, userId]);
 
   if (!isOpen) return null;
 
@@ -36,10 +62,9 @@ const AddTransactionModal: React.FC<Props> = ({
       onAdd(savedTx);
       onClose();
       // Reset State
-      setIsCustomCategory(false);
       setFormData({
         amount: "",
-        category: "Food",
+        category: availableCategories[0] || "",
         date: new Date().toISOString().split("T")[0],
         note: "",
         type: "expense",
@@ -50,15 +75,6 @@ const AddTransactionModal: React.FC<Props> = ({
       setLoading(false);
     }
   };
-
-  const defaultCategories = [
-    "Food",
-    "Transport",
-    "Bills",
-    "Entertainment",
-    "Shopping",
-    "Income",
-  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm p-4 transition-all">
@@ -108,6 +124,7 @@ const AddTransactionModal: React.FC<Props> = ({
                 required
                 type="number"
                 step="0.01"
+                placeholder="0.00"
                 className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold text-lg"
                 value={formData.amount}
                 onChange={(e) =>
@@ -117,59 +134,37 @@ const AddTransactionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Category Section */}
+          {/* Dynamic Category Dropdown */}
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center px-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Category
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsCustomCategory(!isCustomCategory)}
-                className="text-[10px] font-black text-indigo-500 uppercase flex items-center gap-1 hover:opacity-70"
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+              Category
+            </label>
+            <div className="relative">
+              <select
+                required
+                className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 font-medium"
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
               >
-                {isCustomCategory ? "Back to list" : "Create New"}
-              </button>
-            </div>
-
-            {isCustomCategory ? (
-              <div className="relative animate-in slide-in-from-top-2 duration-200">
-                <Type
-                  size={16}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500"
-                />
-                <input
-                  autoFocus
-                  required
-                  placeholder="Enter category name..."
-                  className="w-full bg-slate-50 dark:bg-[#0f1115] border border-indigo-500/30 dark:border-indigo-500/20 rounded-2xl py-4 pl-12 pr-4 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                />
-              </div>
-            ) : (
-              <div className="relative">
-                <select
-                  className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 font-medium"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                >
-                  {defaultCategories.map((cat) => (
+                {availableCategories.length > 0 ? (
+                  availableCategories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  size={16}
-                />
-              </div>
-            )}
+                  ))
+                ) : (
+                  <option disabled value="">
+                    No categories found
+                  </option>
+                )}
+              </select>
+              <ChevronDown
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                size={16}
+              />
+            </div>
           </div>
 
           {/* Date & Note */}
@@ -203,7 +198,7 @@ const AddTransactionModal: React.FC<Props> = ({
           </div>
 
           <button
-            disabled={loading}
+            disabled={loading || availableCategories.length === 0}
             type="submit"
             className="w-full bg-indigo-600 dark:bg-[#6366f1] text-white font-black py-4 rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-indigo-500/20 disabled:opacity-50"
           >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -10,7 +10,6 @@ import {
   Utensils,
   Car,
   Lightbulb,
-  ShoppingBag,
   Clock,
   Tag,
 } from "lucide-react";
@@ -23,6 +22,11 @@ const TransactionPage: React.FC = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([
+    "Food",
+    "Transport",
+    "Bills",
+  ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("All");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -31,27 +35,32 @@ const TransactionPage: React.FC = () => {
   const currentUser = JSON.parse(localStorage.getItem("user") || "null");
   const currentUserId = currentUser?.id;
 
+  const loadData = async () => {
+    if (!currentUserId) return;
+    try {
+      const [txData, budgetRes] = await Promise.all([
+        TransactionService.getAllByUserId(currentUserId),
+        fetch(`http://localhost:5000/budgets?userId=${currentUserId}`),
+      ]);
+
+      setTransactions(txData || []);
+
+      const budgets = await budgetRes.json();
+      if (budgets.length > 0) {
+        setAvailableCategories(Object.keys(budgets[0].categoryLimits));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (!currentUserId) {
       navigate("/login");
-      return;
+    } else {
+      loadData();
     }
-    const loadData = async () => {
-      try {
-        const data = await TransactionService.getAllByUserId(currentUserId);
-        setTransactions(data || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    loadData();
   }, [currentUserId, navigate]);
-
-  // Dynamically extract unique categories for the filter
-  const dynamicCategories = useMemo(() => {
-    const fromData = transactions.map((t) => t.category);
-    return Array.from(new Set(["Food", "Transport", "Bills", ...fromData]));
-  }, [transactions]);
 
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch = (t.note || "")
@@ -83,7 +92,7 @@ const TransactionPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 p-6 lg:p-10 bg-slate-50 dark:bg-[#0f1115] min-h-screen transition-colors duration-300">
+    <div className="flex-1 p-6 lg:p-10 bg-slate-50 dark:bg-[#0f1115] min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
@@ -108,7 +117,7 @@ const TransactionPage: React.FC = () => {
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors w-5 h-5" />
             <input
               placeholder="Search descriptions..."
-              className="w-full pl-14 pr-4 py-4 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[24px] outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-bold"
+              className="w-full pl-14 pr-4 py-4 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[24px] outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -120,7 +129,7 @@ const TransactionPage: React.FC = () => {
               onChange={(e) => setFilterCategory(e.target.value)}
             >
               <option value="All">All Categories</option>
-              {dynamicCategories.map((cat) => (
+              {availableCategories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
@@ -182,7 +191,7 @@ const TransactionPage: React.FC = () => {
                   <td
                     className={`px-10 py-6 font-black text-sm ${item.type === "income" ? "text-emerald-500" : "dark:text-white"}`}
                   >
-                    {item.type === "income" ? "+" : "-"}₱
+                    {item.type === "income" ? "+" : "-"}₱{" "}
                     {formatCurrency(item.amount)}
                   </td>
                   <td className="px-10 py-6 text-right">
@@ -205,7 +214,10 @@ const TransactionPage: React.FC = () => {
 
       <AddTransactionModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          loadData();
+        }}
         onAdd={(tx) => setTransactions([tx, ...transactions])}
         userId={currentUserId}
       />

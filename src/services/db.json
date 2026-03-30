@@ -5,6 +5,18 @@
       "email": "robert@gmail.com",
       "password": "123",
       "id": "L4QIW7RbHQM"
+    },
+    {
+      "name": "Quiela",
+      "email": "quiela@gmail.com",
+      "password": "123",
+      "id": "WwPGkXXcr0I"
+    },
+    {
+      "name": "Saydon",
+      "email": "saydon@gmail.com",
+      "password": "123",
+      "id": "u6GTB52KQo4"
     }
   ],
   "transactions": [
@@ -37,9 +49,36 @@
         "Food": 1500,
         "Transport": 1000,
         "Bills": 500,
-        "Entertainment": 2000
+        "Entertainment": 2000,
+        "Fuel": 0
       },
       "id": "eOgOfGqy1wk"
+    },
+    {
+      "userId": "WwPGkXXcr0I",
+      "masterBudget": 4500,
+      "categoryLimits": {
+        "Food": 0,
+        "Transport": 0,
+        "Bills": 0,
+        "Entertainment": 0,
+        "Makeup Kits": 0
+      },
+      "id": "aRxrYWyQZ0U"
+    },
+    {
+      "userId": "u6GTB52KQo4",
+      "masterBudget": 2500,
+      "categoryLimits": {
+        "Food": 0,
+        "Transport": 0,
+        "Bills": 0,
+        "Entertainment": 0,
+        "Pagwapo": 0,
+        "Collectibles": 0,
+        "Gift for loveychi": 0
+      },
+      "id": "y7I66YprezE"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
