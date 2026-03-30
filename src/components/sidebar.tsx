@@ -80,7 +80,7 @@ const Sidebar = () => {
             Planning & Analytics
           </p>
           <NavItem
-            to="/budget"
+            to="/budget" // [!code hl]
             icon={<Target size={18} />}
             label="Budget Limits"
           />

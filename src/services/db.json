@@ -9,14 +9,27 @@
   ],
   "transactions": [
     {
-      "id": "h_a1yiahsz8",
+      "id": "KGGhMBoPJEk",
       "userId": "GCc_bGf3twk",
       "type": "Expense",
-      "date": "March 29, 2026",
-      "amount": "-$250",
+      "date": "March 30, 2026",
+      "amount": "-₱100",
       "status": "Completed",
-      "note": "Full tank motorcycle",
+      "note": "2 pc carlitos",
       "category": "Food"
+    }
+  ],
+  "budgets": [
+    {
+      "userId": "GCc_bGf3twk",
+      "masterBudget": 2500,
+      "categoryLimits": {
+        "Food": 600,
+        "Transport": 300,
+        "Bills": 300,
+        "Entertainment": 300
+      },
+      "id": "HtALgs8J7MY"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -11,6 +11,7 @@ import Register from "./components/register";
 import Dashboard from "./components/dashboard";
 import TransactionPage from "./components/transaction";
 import SettingsPage from "./components/settings";
+import BudgetLimit from "./features/budgetLimit"; // [!code ++]
 import Sidebar from "./components/sidebar";
 import "./App.css";
 
@@ -52,6 +53,7 @@ function App() {
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<TransactionPage />} />
+            <Route path="/budget" element={<BudgetLimit />} /> // [!code ++]
             <Route path="/settings" element={<SettingsPage />} />
             <Route index element={<Navigate to="/dashboard" replace />} />
           </Route>

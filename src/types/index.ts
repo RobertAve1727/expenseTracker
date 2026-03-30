@@ -10,11 +10,12 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  password?: string;
 }
 
 export interface Transaction {
   id: string;
-  userId: string | number; // <--- ADD THIS LINE
+  userId: string | number;
   type: "Income" | "Expense";
   date: string;
   amount: string;
@@ -24,7 +25,13 @@ export interface Transaction {
 }
 
 export interface Budget {
-  category: Category;
-  limit: number;
-  spent: number;
+  id?: string;
+  userId: string;
+  masterBudget: number;
+  categoryLimits: {
+    Food: number;
+    Transport: number;
+    Bills: number;
+    Entertainment: number;
+  };
 }
