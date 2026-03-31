@@ -7,18 +7,7 @@
       "id": "3w6c3jR3Mac"
     }
   ],
-  "transactions": [
-    {
-      "id": "5IkXMto_B_c",
-      "userId": "3w6c3jR3Mac",
-      "type": "expense",
-      "date": "March 31, 2026",
-      "amount": "399",
-      "status": "Completed",
-      "note": "Topped up valo, night market",
-      "category": "Uncategorized"
-    }
-  ],
+  "transactions": [],
   "budgets": [
     {
       "userId": "3w6c3jR3Mac",

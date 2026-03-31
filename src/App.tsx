@@ -13,7 +13,7 @@ import TransactionPage from "./components/transaction";
 import SettingsPage from "./components/settings";
 import BudgetLimit from "./features/budgetLimit";
 import CategoryPage from "./components/category";
-//import SmartInsights from "./components/smartInsights"; // Replaced Reports with SmartInsights
+import SmartInsights from "./features/smartInsights"; // Replaced Reports with SmartInsights
 import Sidebar from "./components/sidebar";
 import "./App.css";
 
@@ -88,8 +88,10 @@ function App() {
             <Route path="/transactions" element={<TransactionPage />} />
             <Route path="/categories" element={<CategoryPage />} />
             <Route path="/budget" element={<BudgetLimit />} />
-            {/* Reports route removed */}
-            {/* <Route path="/insights" element={<SmartInsights />} /> */}
+
+            {/* FIXED ROUTING HERE */}
+            <Route path="/insights" element={<SmartInsights />} />
+
             <Route path="/settings" element={<SettingsPage />} />
 
             <Route
