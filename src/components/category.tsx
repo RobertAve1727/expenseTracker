@@ -59,14 +59,13 @@ const Categories = () => {
     setIsDeleting(true);
 
     try {
-      // 1. INDUSTRY STANDARD: RE-MAP TRANSACTIONS
-      // Find transactions belonging to this category
+      // 1. INDUSTRY STANDARD: RE-MAP TRANSACTIONS TO "UNCATEGORIZED"
+      // This ensures your Reports stay accurate and don't lose historical data.
       const linkedTransactions = transactions.filter(
         (t) => t.category === categoryToDelete.name,
       );
 
       if (linkedTransactions.length > 0) {
-        // Update them all to "Uncategorized" in parallel
         await Promise.all(
           linkedTransactions.map((t) =>
             fetch(`http://localhost:5000/transactions/${t.id}`, {
@@ -79,6 +78,7 @@ const Categories = () => {
       }
 
       // 2. CLEAN UP BUDGET LIMITS
+      // Removes the limit entry for the deleted category to keep budget reports clean.
       if (budgetData) {
         const updatedLimits = { ...budgetData.categoryLimits };
         delete updatedLimits[categoryToDelete.name];
@@ -97,7 +97,9 @@ const Categories = () => {
       setIsDeleteModalOpen(false);
       setCategoryToDelete(null);
       setActiveMenu(null);
-      await fetchData(); // Refresh data to show "Uncategorized" changes
+
+      // Refresh to update UI with newly "Uncategorized" transactions
+      await fetchData();
     } catch (e) {
       console.error("Deletion/Migration failed:", e);
     } finally {
