@@ -1,4 +1,4 @@
-import type { Budget } from "../types/index";
+import type { Budget } from "./index";
 
 const API_URL = "http://localhost:5000/budgets";
 

@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { CheckCircle2, AlertTriangle, Edit2 } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../services/useAuth";
 import { TransactionService } from "../services/transactionService";
 import { BudgetService } from "../services/budgetService";
-import type { Transaction } from "../types/index";
+import type { Transaction } from "../services/index";
 
 const BudgetLimit = () => {
   const { user } = useAuth();

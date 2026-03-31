@@ -13,7 +13,7 @@ import {
   Clock,
   Tag,
 } from "lucide-react";
-import type { Transaction } from "../types";
+import type { Transaction } from "../services";
 import { TransactionService } from "../services/transactionService";
 import AddTransactionModal from "../features/addTransaction";
 import DeleteConfirmModal from "../features/deleteTransaction";

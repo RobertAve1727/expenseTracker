@@ -7,24 +7,13 @@
       "id": "3w6c3jR3Mac"
     }
   ],
-  "transactions": [
-    {
-      "id": "k-dcwRK3nAw",
-      "userId": "3w6c3jR3Mac",
-      "type": "expense",
-      "date": "March 31, 2026",
-      "amount": "200",
-      "status": "Completed",
-      "note": "full tank",
-      "category": "Fuel"
-    }
-  ],
+  "transactions": [],
   "budgets": [
     {
       "userId": "3w6c3jR3Mac",
       "masterBudget": 450,
       "categoryLimits": {
-        "Fuel": 200
+        "Haircut": 0
       },
       "id": "9zDtx-KpSj8"
     }
@@ -32,10 +21,10 @@
   "categories": [
     {
       "userId": "3w6c3jR3Mac",
-      "name": "Fuel",
+      "name": "Haircut",
       "icon": "ShoppingBag",
       "color": "bg-indigo-500",
-      "id": "fYVJybp_nBw"
+      "id": "GrBI-SO1Ho8"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

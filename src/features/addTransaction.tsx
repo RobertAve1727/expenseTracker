@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X, DollarSign, ChevronDown } from "lucide-react";
-import type { Transaction } from "../types";
+import type { Transaction } from "../services";
 import { TransactionService } from "../services/transactionService";
 
 interface Props {

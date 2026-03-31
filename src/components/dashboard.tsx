@@ -18,9 +18,9 @@ import {
   TrendingDown,
   Target,
 } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../services/useAuth";
 import { TransactionService } from "../services/transactionService";
-import type { Transaction } from "../types";
+import type { Transaction } from "../services";
 
 const Dashboard = () => {
   const { user } = useAuth();

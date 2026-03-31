@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useRegister } from "../hooks/useRegister";
+import { useRegister } from "../services/useRegister";
 
 const Register = () => {
   const navigate = useNavigate();

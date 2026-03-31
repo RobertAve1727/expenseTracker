@@ -4,7 +4,7 @@ import { Mail, Lock, Sun, Moon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaGithub } from "react-icons/fa";
 import logoUrl from "../assets/logo.png";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../services/useAuth";
 
 const Login = () => {
   const [email, setEmail] = useState("");

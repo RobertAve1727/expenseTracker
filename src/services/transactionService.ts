@@ -1,4 +1,4 @@
-import type { Transaction } from "../types/index";
+import type { Transaction } from "./index";
 
 const API_URL = "http://localhost:5000/transactions";
 
