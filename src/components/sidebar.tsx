@@ -19,18 +19,24 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const savedUser = user || JSON.parse(localStorage.getItem("user") || "null");
+  // Pulling from sessionStorage now
+  const savedUser =
+    user || JSON.parse(sessionStorage.getItem("user") || "null");
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
     logout();
+
+    // Explicitly clear session on logout
+    sessionStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth-change"));
+
     navigate("/login");
   };
 
   return (
     <aside
       className="w-64 bg-white dark:bg-[#0f1115] text-slate-500 dark:text-slate-400 flex flex-col p-6 border-r border-slate-200 dark:border-slate-800/50 h-screen sticky top-0 font-sans transition-colors duration-300
-      /* Custom Scrollbar Logic */
       overflow-y-auto
       [&::-webkit-scrollbar]:w-1.5
       [&::-webkit-scrollbar-track]:bg-transparent
@@ -39,7 +45,6 @@ const Sidebar = () => {
       [&::-webkit-scrollbar-thumb]:rounded-full
       hover:[&::-webkit-scrollbar-thumb]:bg-indigo-500/50"
     >
-      {/* Brand Logo */}
       <Link
         to="/dashboard"
         className="flex items-center gap-3 text-slate-900 dark:text-white mb-8 px-2 flex-shrink-0"
@@ -52,7 +57,6 @@ const Sidebar = () => {
         <span className="font-bold text-lg tracking-tight">ZeroBalance</span>
       </Link>
 
-      {/* Search Bar */}
       <div className="relative mb-6 flex-shrink-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
         <input
@@ -62,7 +66,6 @@ const Sidebar = () => {
         />
       </div>
 
-      {/* Main Navigation */}
       <nav className="flex-1 space-y-1 pr-2">
         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 px-2">
           Overview
@@ -127,7 +130,6 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      {/* User Profile - Fixed to bottom even when scrolling */}
       <div className="mt-auto flex items-center gap-3 p-2 border-t border-slate-200 dark:border-slate-800/50 pt-6 flex-shrink-0 bg-white dark:bg-[#0f1115]">
         <div className="relative">
           <img
@@ -172,11 +174,7 @@ const NavItem = ({
     to={to}
     className={({ isActive }) => `
       flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all group
-      ${
-        isActive
-          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-          : "text-slate-500 hover:bg-slate-100 dark:hover:bg-[#1a1d23] hover:text-slate-900 dark:hover:text-white"
-      }
+      ${isActive ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-[#1a1d23] hover:text-slate-900 dark:hover:text-white"}
     `}
   >
     <div className="flex items-center gap-3">

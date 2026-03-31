@@ -10,7 +10,6 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // --- THEME STATE ---
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
@@ -18,7 +17,6 @@ const Login = () => {
   const navigate = useNavigate();
   const { verifyUser, error, isLoading } = useAuth();
 
-  // Effect to apply theme class to the HTML element
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -35,7 +33,10 @@ const Login = () => {
     e.preventDefault();
     const user = await verifyUser(email, password);
     if (user) {
-      // Note: useAuth now handles saving 'zb_user' to localStorage internally
+      // SAVE TO SESSION STORAGE: This ensures the login is forgotten when the tab closes
+      sessionStorage.setItem("user", JSON.stringify(user));
+
+      window.dispatchEvent(new Event("auth-change"));
       navigate("/dashboard");
     }
   };
@@ -43,7 +44,6 @@ const Login = () => {
   return (
     <div className="w-full bg-white dark:bg-[#0f1115] transition-colors duration-300">
       <div className="auth-shell relative">
-        {/* 🌙 THEME TOGGLE BUTTON ☀️ */}
         <button
           onClick={toggleTheme}
           className="absolute top-8 right-8 p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 hover:scale-110 transition-all z-50 shadow-sm"
@@ -54,7 +54,6 @@ const Login = () => {
 
         <div className="min-h-screen flex p-4 lg:p-8 font-sans transition-colors duration-300">
           <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-            {/* LEFT SIDE: Sign-In Form */}
             <main className="flex flex-col justify-center px-4 lg:px-20 py-12 text-left font-semibold text-slate-800 dark:text-slate-200">
               <div className="w-full max-w-sm mx-auto lg:mx-0">
                 <div className="mb-12 flex items-center gap-2">
@@ -148,7 +147,6 @@ const Login = () => {
               </div>
             </main>
 
-            {/* RIGHT SIDE: Black Hero Card */}
             <aside className="hidden lg:flex flex-col relative bg-black rounded-[40px] p-10 overflow-hidden shadow-2xl">
               <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-slate-800/40 via-transparent to-transparent opacity-50"></div>
               <div className="relative z-10 h-full flex flex-col text-white">

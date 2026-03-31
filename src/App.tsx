@@ -16,10 +16,9 @@ import CategoryPage from "./components/category";
 import Sidebar from "./components/sidebar";
 import "./App.css";
 
-// Helper to check authentication status
+// SWITCHED TO sessionStorage: This clears when the tab/window is closed
 const isAuthenticated = () => {
-  const user = localStorage.getItem("user");
-  // Check if user exists and isn't a string "null" or "undefined"
+  const user = sessionStorage.getItem("user");
   return user !== null && user !== "undefined";
 };
 
@@ -48,11 +47,11 @@ const AppLayout = () => {
 };
 
 function App() {
-  // Use state to track auth to trigger re-renders on login/logout
   const [isAuth, setIsAuth] = useState(isAuthenticated());
 
   useEffect(() => {
-    // Theme Logic
+    // Theme stays in localStorage because we want the theme to persist
+    // even if the user has to log back in.
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
       document.documentElement.classList.add("dark");
@@ -60,16 +59,19 @@ function App() {
       document.documentElement.classList.remove("dark");
     }
 
-    // Sync auth state if localStorage changes (optional but helpful)
     const checkAuth = () => setIsAuth(isAuthenticated());
-    window.addEventListener("storage", checkAuth);
-    return () => window.removeEventListener("storage", checkAuth);
+
+    // We listen for the custom event to update the UI state
+    window.addEventListener("auth-change", checkAuth);
+
+    return () => {
+      window.removeEventListener("auth-change", checkAuth);
+    };
   }, []);
 
   return (
     <Router>
       <Routes>
-        {/* Public Routes: Redirect to dashboard if already logged in */}
         <Route
           path="/login"
           element={isAuth ? <Navigate to="/dashboard" replace /> : <Login />}
@@ -79,7 +81,6 @@ function App() {
           element={isAuth ? <Navigate to="/dashboard" replace /> : <Register />}
         />
 
-        {/* Protected Routes Block */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
@@ -87,13 +88,10 @@ function App() {
             <Route path="/categories" element={<CategoryPage />} />
             <Route path="/budget" element={<BudgetLimit />} />
             <Route path="/settings" element={<SettingsPage />} />
-
-            {/* Index route for the layout */}
             <Route index element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Route>
 
-        {/* Root Redirect Logic */}
         <Route
           path="/"
           element={
@@ -105,7 +103,6 @@ function App() {
           }
         />
 
-        {/* Global Catch-all */}
         <Route
           path="*"
           element={<Navigate to={isAuth ? "/dashboard" : "/login"} replace />}

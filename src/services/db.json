@@ -9,24 +9,34 @@
   ],
   "transactions": [
     {
-      "id": "wM1sqQYTqt0",
+      "id": "k-dcwRK3nAw",
       "userId": "3w6c3jR3Mac",
       "type": "expense",
       "date": "March 31, 2026",
       "amount": "200",
       "status": "Completed",
-      "note": "uniqlo tshirt",
-      "category": "Shopping"
+      "note": "full tank",
+      "category": "Fuel"
     }
   ],
   "budgets": [
     {
       "userId": "3w6c3jR3Mac",
       "masterBudget": 450,
-      "categoryLimits": {},
+      "categoryLimits": {
+        "Fuel": 200
+      },
       "id": "9zDtx-KpSj8"
     }
   ],
-  "categories": [],
+  "categories": [
+    {
+      "userId": "3w6c3jR3Mac",
+      "name": "Fuel",
+      "icon": "ShoppingBag",
+      "color": "bg-indigo-500",
+      "id": "fYVJybp_nBw"
+    }
+  ],
   "$schema": "./node_modules/json-server/schema.json"
 }
