@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(() => {
-    const savedUser = localStorage.getItem("user");
+    // SWITCHED: Now checks sessionStorage on initial load
+    const savedUser = sessionStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
@@ -16,14 +17,17 @@ export const useAuth = () => {
       // Fetching your local users array
       const response = await fetch("http://localhost:5000/users");
       const users = await response.json();
+
       const foundUser = users.find(
         (u: any) => u.email === email && u.password === password,
       );
 
       if (foundUser) {
         setUser(foundUser);
-        // Using the original "user" key
-        localStorage.setItem("user", JSON.stringify(foundUser));
+
+        // SWITCHED: Save to sessionStorage so it clears when tab closes
+        sessionStorage.setItem("user", JSON.stringify(foundUser));
+
         return foundUser;
       }
 
@@ -39,7 +43,8 @@ export const useAuth = () => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    // SWITCHED: Clears sessionStorage
+    sessionStorage.removeItem("user");
   };
 
   return { user, verifyUser, logout, error, isLoading };
