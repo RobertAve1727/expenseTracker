@@ -13,7 +13,7 @@ import TransactionPage from "./components/transaction";
 import SettingsPage from "./components/settings";
 import BudgetLimit from "./features/budgetLimit";
 import CategoryPage from "./components/category";
-import Reports from "./components/report"; // Added Reports import
+//import SmartInsights from "./components/smartInsights"; // Replaced Reports with SmartInsights
 import Sidebar from "./components/sidebar";
 import "./App.css";
 
@@ -88,18 +88,10 @@ function App() {
             <Route path="/transactions" element={<TransactionPage />} />
             <Route path="/categories" element={<CategoryPage />} />
             <Route path="/budget" element={<BudgetLimit />} />
-            <Route path="/reports" element={<Reports />} />{" "}
-            {/* Added Reports route */}
+            {/* Reports route removed */}
+            {/* <Route path="/insights" element={<SmartInsights />} /> */}
             <Route path="/settings" element={<SettingsPage />} />
-            {/* Placeholder routes for sidebar links not yet fully implemented */}
-            <Route
-              path="/insights"
-              element={
-                <div className="p-10 dark:text-white font-black uppercase tracking-widest">
-                  Smart Insights Coming Soon
-                </div>
-              }
-            />
+
             <Route
               path="/alerts"
               element={

@@ -3,7 +3,6 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ArrowUpDown,
-  PieChart,
   Target,
   Search,
   LogOut,
@@ -95,11 +94,7 @@ const Sidebar = () => {
             icon={<Target size={18} />}
             label="Budget Limits"
           />
-          <NavItem
-            to="/reports"
-            icon={<PieChart size={18} />}
-            label="Reports"
-          />
+          {/* Reports NavItem removed from here */}
           <NavItem
             to="/insights"
             icon={<TrendingUp size={18} />}
