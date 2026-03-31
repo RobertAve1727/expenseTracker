@@ -7,13 +7,24 @@
       "id": "3w6c3jR3Mac"
     }
   ],
-  "transactions": [],
+  "transactions": [
+    {
+      "id": "5IkXMto_B_c",
+      "userId": "3w6c3jR3Mac",
+      "type": "expense",
+      "date": "March 31, 2026",
+      "amount": "399",
+      "status": "Completed",
+      "note": "Topped up valo, night market",
+      "category": "Uncategorized"
+    }
+  ],
   "budgets": [
     {
       "userId": "3w6c3jR3Mac",
       "masterBudget": 450,
       "categoryLimits": {
-        "Haircut": 0
+        "Collectibles": 0
       },
       "id": "9zDtx-KpSj8"
     }
@@ -21,10 +32,10 @@
   "categories": [
     {
       "userId": "3w6c3jR3Mac",
-      "name": "Haircut",
+      "name": "Collectibles",
       "icon": "ShoppingBag",
       "color": "bg-indigo-500",
-      "id": "GrBI-SO1Ho8"
+      "id": "Ao8rUcx6R90"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

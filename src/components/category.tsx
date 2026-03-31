@@ -7,19 +7,20 @@ import {
   Plus,
   Tag,
   Trash2,
+  HelpCircle,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import AddCategoryModal from "../features/newCategory";
-import DeleteCategoryModal from "../features/deleteCategory"; // New Import
+import DeleteCategoryModal from "../features/deleteCategory";
 import type { Category } from "../services";
 
 const Categories = () => {
   const [viewType, setViewType] = useState<"grid" | "list">("grid");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null,
-  ); // Track category
+  );
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -30,7 +31,6 @@ const Categories = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const fetchData = async () => {
-    // UPDATED: Using sessionStorage for user data
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     const userId = user.id;
 
@@ -54,16 +54,31 @@ const Categories = () => {
     }
   };
 
-  // TRIGGERED BY MODAL
   const confirmDeleteCategory = async () => {
     if (!categoryToDelete) return;
     setIsDeleting(true);
 
     try {
-      await fetch(`http://localhost:5000/categories/${categoryToDelete.id}`, {
-        method: "DELETE",
-      });
+      // 1. INDUSTRY STANDARD: RE-MAP TRANSACTIONS
+      // Find transactions belonging to this category
+      const linkedTransactions = transactions.filter(
+        (t) => t.category === categoryToDelete.name,
+      );
 
+      if (linkedTransactions.length > 0) {
+        // Update them all to "Uncategorized" in parallel
+        await Promise.all(
+          linkedTransactions.map((t) =>
+            fetch(`http://localhost:5000/transactions/${t.id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ category: "Uncategorized" }),
+            }),
+          ),
+        );
+      }
+
+      // 2. CLEAN UP BUDGET LIMITS
       if (budgetData) {
         const updatedLimits = { ...budgetData.categoryLimits };
         delete updatedLimits[categoryToDelete.name];
@@ -74,12 +89,17 @@ const Categories = () => {
         });
       }
 
+      // 3. DELETE THE CATEGORY
+      await fetch(`http://localhost:5000/categories/${categoryToDelete.id}`, {
+        method: "DELETE",
+      });
+
       setIsDeleteModalOpen(false);
       setCategoryToDelete(null);
       setActiveMenu(null);
-      fetchData();
+      await fetchData(); // Refresh data to show "Uncategorized" changes
     } catch (e) {
-      console.error(e);
+      console.error("Deletion/Migration failed:", e);
     } finally {
       setIsDeleting(false);
     }
@@ -90,6 +110,7 @@ const Categories = () => {
   }, []);
 
   const getIcon = (name: string) => {
+    if (name === "Uncategorized") return <HelpCircle size={20} />;
     const Icon = (LucideIcons as any)[name] || Tag;
     return <Icon size={20} />;
   };
@@ -248,7 +269,6 @@ const Categories = () => {
         </div>
       </div>
 
-      {/* MODALS */}
       <AddCategoryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
