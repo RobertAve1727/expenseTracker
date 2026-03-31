@@ -19,21 +19,33 @@ const BudgetLimit = () => {
     Entertainment: 0,
   });
 
+  // Inside BudgetLimit component
   const loadAllData = useCallback(async () => {
     const currentUserId =
       user?.id || JSON.parse(localStorage.getItem("user") || "{}")?.id;
     if (!currentUserId) return;
 
     try {
-      const [transactionData, budgetEntry] = await Promise.all([
+      const [transactionData, budgetEntry, categoryData] = await Promise.all([
         TransactionService.getAllByUserId(currentUserId),
         BudgetService.getBudgetByUserId(currentUserId),
+        fetch(`http://localhost:5000/categories?userId=${currentUserId}`).then(
+          (res) => res.json(),
+        ),
       ]);
 
       setTransactions(transactionData || []);
+
+      // We set limits based on what categories actually exist
       if (budgetEntry) {
         setMasterBudget(budgetEntry.masterBudget);
-        setLimits(budgetEntry.categoryLimits);
+
+        // Merge: Ensure every category found in categoryData has a limit entry
+        const mergedLimits: Record<string, number> = {};
+        categoryData.forEach((cat: any) => {
+          mergedLimits[cat.name] = budgetEntry.categoryLimits[cat.name] || 0;
+        });
+        setLimits(mergedLimits);
       }
     } catch (err) {
       console.error("Load failed:", err);

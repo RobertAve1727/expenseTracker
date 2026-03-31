@@ -1,122 +1,32 @@
 {
   "users": [
     {
-      "name": "Robert Avelino",
+      "name": "Robert",
       "email": "robert@gmail.com",
       "password": "123",
-      "id": "L4QIW7RbHQM"
-    },
-    {
-      "name": "Quiela",
-      "email": "quiela@gmail.com",
-      "password": "123",
-      "id": "WwPGkXXcr0I"
-    },
-    {
-      "name": "Saydon",
-      "email": "saydon@gmail.com",
-      "password": "123",
-      "id": "u6GTB52KQo4"
-    },
-    {
-      "name": "Jiyongie",
-      "email": "jiyong@gmail.com",
-      "password": "123",
-      "id": "JEQYRdzdw7I"
+      "id": "3w6c3jR3Mac"
     }
   ],
   "transactions": [
     {
-      "id": "zZTCjzg7s-4",
-      "userId": "L4QIW7RbHQM",
+      "id": "wM1sqQYTqt0",
+      "userId": "3w6c3jR3Mac",
       "type": "expense",
-      "date": "March 30, 2026",
-      "amount": "85",
+      "date": "March 31, 2026",
+      "amount": "200",
       "status": "Completed",
-      "note": "siomai wid loveychi",
-      "category": "Food"
-    },
-    {
-      "id": "Jq77sTSGNBs",
-      "userId": "L4QIW7RbHQM",
-      "type": "expense",
-      "date": "March 30, 2026",
-      "amount": "150",
-      "status": "Completed",
-      "note": "Fuel for motor",
-      "category": "Transport"
-    },
-    {
-      "id": "4OWbzXzGMGI",
-      "userId": "JEQYRdzdw7I",
-      "type": "expense",
-      "date": "March 30, 2026",
-      "amount": "850",
-      "status": "Completed",
-      "note": "ACCTG 301",
-      "category": "Acctg Books"
-    },
-    {
-      "id": "g18H9vFhfp8",
-      "userId": "JEQYRdzdw7I",
-      "type": "income",
-      "date": "March 30, 2026",
-      "amount": "1500",
-      "status": "Completed",
-      "note": "Allowance",
-      "category": "Food"
+      "note": "uniqlo tshirt",
+      "category": "Shopping"
     }
   ],
   "budgets": [
     {
-      "userId": "L4QIW7RbHQM",
-      "masterBudget": 5000,
-      "categoryLimits": {
-        "Food": 1500,
-        "Transport": 1000,
-        "Bills": 500,
-        "Entertainment": 2000,
-        "Fuel": 0
-      },
-      "id": "eOgOfGqy1wk"
-    },
-    {
-      "userId": "WwPGkXXcr0I",
-      "masterBudget": 4500,
-      "categoryLimits": {
-        "Food": 0,
-        "Transport": 0,
-        "Bills": 0,
-        "Entertainment": 0,
-        "Makeup Kits": 0
-      },
-      "id": "aRxrYWyQZ0U"
-    },
-    {
-      "userId": "u6GTB52KQo4",
-      "masterBudget": 2500,
-      "categoryLimits": {
-        "Food": 0,
-        "Transport": 0,
-        "Bills": 0,
-        "Entertainment": 0,
-        "Pagwapo": 0,
-        "asdfa": 0
-      },
-      "id": "y7I66YprezE"
-    },
-    {
-      "userId": "JEQYRdzdw7I",
-      "masterBudget": 5000,
-      "categoryLimits": {
-        "Food": 1000,
-        "Transport": 1000,
-        "Bills": 300,
-        "Entertainment": 1200,
-        "Acctg Books": 1000
-      },
-      "id": "E20kDfekYuo"
+      "userId": "3w6c3jR3Mac",
+      "masterBudget": 450,
+      "categoryLimits": {},
+      "id": "9zDtx-KpSj8"
     }
   ],
+  "categories": [],
   "$schema": "./node_modules/json-server/schema.json"
 }

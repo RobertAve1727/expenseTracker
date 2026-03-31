@@ -1,18 +1,9 @@
 import React, { useState } from "react";
-import {
-  X,
-  Briefcase,
-  ShoppingBag,
-  Zap,
-  Car,
-  Utensils,
-  Type,
-} from "lucide-react";
+import { X, Briefcase, ShoppingBag, Zap, Car, Utensils } from "lucide-react";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  // This definition fixes the 'IntrinsicAttributes' error in your screenshot
   onCategoryCreated: () => Promise<void> | void;
 }
 
@@ -23,7 +14,6 @@ const AddCategoryModal: React.FC<Props> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "Shopping",
     icon: "ShoppingBag",
@@ -40,29 +30,44 @@ const AddCategoryModal: React.FC<Props> = ({
     const userId = user.id || "L4QIW7RbHQM";
 
     try {
+      // 1. Create the Category Definition
+      await fetch(`http://localhost:5000/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, ...formData }),
+      });
+
+      // 2. Sync with Budget (Upsert logic)
       const budgetRes = await fetch(
         `http://localhost:5000/budgets?userId=${userId}`,
       );
       const budgets = await budgetRes.json();
-      const myBudget = budgets[0];
 
-      // New segments start at 0 per your requirements
-      const updatedLimits = {
-        ...myBudget.categoryLimits,
-        [formData.name]: 0,
-      };
+      if (budgets.length > 0) {
+        const myBudget = budgets[0];
+        await fetch(`http://localhost:5000/budgets/${myBudget.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            categoryLimits: { ...myBudget.categoryLimits, [formData.name]: 0 },
+          }),
+        });
+      } else {
+        await fetch(`http://localhost:5000/budgets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            masterBudget: 0,
+            categoryLimits: { [formData.name]: 0 },
+          }),
+        });
+      }
 
-      await fetch(`http://localhost:5000/budgets/${myBudget.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoryLimits: updatedLimits }),
-      });
-
-      // Trigger the parent refresh before closing
       await onCategoryCreated();
       onClose();
     } catch (error) {
-      console.error("Failed to initialize segment:", error);
+      console.error("Failed to save category:", error);
     } finally {
       setLoading(false);
     }
@@ -74,14 +79,6 @@ const AddCategoryModal: React.FC<Props> = ({
     { name: "Utensils", icon: <Utensils /> },
     { name: "Car", icon: <Car /> },
     { name: "Zap", icon: <Zap /> },
-  ];
-
-  const colors = [
-    "bg-indigo-500",
-    "bg-emerald-500",
-    "bg-rose-500",
-    "bg-sky-500",
-    "bg-amber-500",
   ];
 
   return (
@@ -103,33 +100,27 @@ const AddCategoryModal: React.FC<Props> = ({
           <div className="space-y-1.5">
             <div className="flex justify-between items-center px-1">
               <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                Identify Segment
+                Identify
               </label>
               <button
                 type="button"
                 onClick={() => setIsCustomCategory(!isCustomCategory)}
                 className="text-[10px] font-black text-indigo-500 uppercase"
               >
-                {isCustomCategory ? "Predefined List" : "Create Unique"}
+                {isCustomCategory ? "List" : "Unique"}
               </button>
             </div>
             {isCustomCategory ? (
-              <div className="relative">
-                <Type
-                  size={16}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500"
-                />
-                <input
-                  autoFocus
-                  required
-                  placeholder="Enter unique name..."
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-indigo-500/30 rounded-2xl py-4 pl-12 pr-4 text-slate-900 dark:text-white outline-none font-medium"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-              </div>
+              <input
+                autoFocus
+                required
+                placeholder="Name..."
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-indigo-500/30 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none font-medium"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+              />
             ) : (
               <select
                 className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none appearance-none font-medium"
@@ -144,9 +135,9 @@ const AddCategoryModal: React.FC<Props> = ({
                   "Bills",
                   "Shopping",
                   "Entertainment",
-                ].map((name) => (
-                  <option key={name} value={name}>
-                    {name}
+                ].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
                   </option>
                 ))}
               </select>
@@ -174,7 +165,7 @@ const AddCategoryModal: React.FC<Props> = ({
           <button
             disabled={loading}
             type="submit"
-            className="w-full bg-indigo-600 dark:bg-[#6366f1] text-white font-black py-4 rounded-2xl shadow-xl shadow-indigo-500/20 disabled:opacity-50 transition-transform active:scale-95"
+            className="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-indigo-500/20 disabled:opacity-50 transition-transform active:scale-95"
           >
             {loading ? "Syncing..." : "Initialize Segment"}
           </button>

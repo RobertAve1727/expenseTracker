@@ -22,3 +22,11 @@ export interface Budget {
   masterBudget: number;
   categoryLimits: Record<string, number>; // Supports any category name
 }
+
+export interface Category {
+  id: string;
+  userId: string;
+  name: string;
+  icon: string;
+  color: string;
+}
