@@ -28,63 +28,50 @@ const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop with Blur */}
-      <div
-        className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
-
-      {/* Modal Container */}
-      <div className="relative w-full max-w-md transform overflow-hidden rounded-[28px] bg-white dark:bg-[#1a1d23] p-6 text-left align-middle shadow-2xl transition-all border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all">
+      {/* MODAL BODY: Lighter grey glassmorphism matching Initialize Segment screenshot */}
+      <div className="bg-[#b3b3b3]/90 border border-white/20 w-full max-w-md rounded-[3.5rem] overflow-hidden shadow-2xl backdrop-blur-2xl animate-in zoom-in-95 duration-200 p-10 relative">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="absolute right-8 top-8 p-2 rounded-xl text-slate-500 hover:text-black transition-all"
         >
-          <X size={20} />
+          <X size={24} strokeWidth={3} />
         </button>
 
-        <div className="flex flex-col items-center text-center mt-2">
-          {/* Warning Icon */}
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-500/10 mb-6">
-            <AlertTriangle className="h-8 w-8 text-rose-500" />
+        <div className="flex flex-col items-center text-center">
+          {/* Warning Icon Container: High contrast Rose theme */}
+          <div className="w-24 h-24 bg-rose-500/10 text-rose-500 rounded-[2rem] flex items-center justify-center mb-8 border-2 border-rose-500/20 shadow-lg shadow-rose-500/10">
+            <AlertTriangle size={40} strokeWidth={3} />
           </div>
 
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-6">
+          {/* Typography: Bold, high-contrast, and tracking-tighter */}
+          <h3 className="text-3xl font-black text-[#1a1a1a] tracking-tighter leading-none mb-4">
             Delete Category?
           </h3>
 
-          <div className="mt-4">
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed px-2">
-              Are you sure you want to delete{" "}
-              <span className="font-bold text-slate-900 dark:text-slate-200">
-                "{categoryName}"
+          <div className="mb-10">
+            <p className="text-[12px] font-black uppercase text-slate-500 tracking-[0.2em] leading-loose px-4">
+              Permanent removal of{" "}
+              <span className="text-[#1a1a1a]">
+                "{categoryName.toUpperCase()}"
               </span>
-              ? This will permanently remove the category. Any transactions
-              currently linked to it will need to be re-categorized.
+              . Linked transactions will require re-categorization within the
+              stream.
             </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-3">
-          <button
-            type="button"
-            className="flex-1 inline-flex justify-center items-center px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all outline-none"
-            onClick={onClose}
-          >
-            Keep Category
-          </button>
-
+        {/* Action Buttons: Matching the wide, rounded style of Initialize Segment */}
+        <div className="flex flex-col gap-4">
           <button
             type="button"
             disabled={isLoading}
-            className="flex-1 inline-flex justify-center items-center gap-2 px-4 py-3 text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 rounded-xl shadow-lg shadow-rose-500/20 active:scale-[0.98] transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-rose-500 hover:bg-rose-600 text-white font-black py-6 rounded-[1.5rem] transition-all active:scale-[0.98] shadow-xl shadow-rose-500/20 disabled:opacity-30 uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-2"
             onClick={onConfirm}
           >
             {isLoading ? (
-              <span className="flex items-center gap-2">
+              <>
                 <svg
                   className="animate-spin h-4 w-4 text-white"
                   viewBox="0 0 24 24"
@@ -104,14 +91,22 @@ const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Deleting...
-              </span>
+                Syncing Deletion...
+              </>
             ) : (
               <>
-                <Trash2 size={16} />
-                Delete Category
+                <Trash2 size={16} strokeWidth={3} />
+                Remove Category
               </>
             )}
+          </button>
+
+          <button
+            type="button"
+            className="w-full py-6 bg-white/50 hover:bg-white/80 text-[#1a1a1a] border border-white/40 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95"
+            onClick={onClose}
+          >
+            Cancel
           </button>
         </div>
       </div>

@@ -11,27 +11,22 @@
       "email": "quiela@gmail.com",
       "password": "123",
       "id": "WRI3EfR1_zE"
-    }
-  ],
-  "transactions": [
+    },
     {
-      "id": "N0jPI2PnsnA",
-      "userId": "3w6c3jR3Mac",
-      "type": "expense",
-      "date": "April 1, 2026",
-      "amount": "543",
-      "status": "Completed",
-      "note": "asdfa",
-      "category": "Collectibles"
+      "name": "Bosss",
+      "email": "vitamilk@gmail.com",
+      "password": "123",
+      "id": "yvYNE7gD0Bw"
     }
   ],
+  "transactions": [],
   "budgets": [
     {
       "userId": "3w6c3jR3Mac",
-      "masterBudget": 450,
+      "masterBudget": 1000,
       "categoryLimits": {
         "Collectibles": 0,
-        "Transport": 0
+        "Fuel": 0
       },
       "id": "9zDtx-KpSj8"
     },
@@ -65,6 +60,13 @@
       "color": "bg-indigo-500",
       "userId": "3w6c3jR3Mac",
       "id": "j6CT9yPrSwU"
+    },
+    {
+      "name": "Gaming",
+      "icon": "Zap",
+      "color": "bg-flow-accent",
+      "userId": "3w6c3jR3Mac",
+      "id": "LYTnUIS2jno"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
