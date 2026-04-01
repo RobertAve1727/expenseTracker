@@ -11,6 +11,7 @@ import {
   HelpCircle,
   FolderTree,
   TrendingUp,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "../services/useAuth";
 
@@ -18,57 +19,42 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  // Pulling from sessionStorage now
   const savedUser =
     user || JSON.parse(sessionStorage.getItem("user") || "null");
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
     logout();
-
-    // Explicitly clear session on logout
     sessionStorage.removeItem("user");
     window.dispatchEvent(new Event("auth-change"));
-
     navigate("/login");
   };
 
   return (
-    <aside
-      className="w-64 bg-white dark:bg-[#0f1115] text-slate-500 dark:text-slate-400 flex flex-col p-6 border-r border-slate-200 dark:border-slate-800/50 h-screen sticky top-0 font-sans transition-colors duration-300
-      overflow-y-auto
-      [&::-webkit-scrollbar]:w-1.5
-      [&::-webkit-scrollbar-track]:bg-transparent
-      [&::-webkit-scrollbar-thumb]:bg-slate-200
-      dark:[&::-webkit-scrollbar-thumb]:bg-slate-800
-      [&::-webkit-scrollbar-thumb]:rounded-full
-      hover:[&::-webkit-scrollbar-thumb]:bg-indigo-500/50"
-    >
+    <aside className="w-68 bg-[var(--surface)]/80 backdrop-blur-xl text-[var(--text)] flex flex-col p-6 border-r border-[var(--border)] h-screen sticky top-0 transition-all duration-300 overflow-y-auto">
       <Link
         to="/dashboard"
-        className="flex items-center gap-3 text-slate-900 dark:text-white mb-8 px-2 flex-shrink-0"
+        className="flex items-center gap-3 text-[var(--text-h)] mb-10 px-2 flex-shrink-0 group"
       >
-        <div className="bg-[#6366f1] p-1.5 rounded-lg shadow-lg shadow-indigo-500/20">
-          <div className="w-5 h-5 border-2 border-white rotate-45 flex items-center justify-center">
-            <div className="w-0.5 h-2 bg-white -rotate-45"></div>
-          </div>
+        <div className="bg-flow-accent p-2 rounded-xl shadow-lg shadow-flow-accent/20 transition-transform group-hover:rotate-12">
+          <Zap size={20} className="text-white fill-white" />
         </div>
-        <span className="font-bold text-lg tracking-tight">ZeroBalance</span>
+        <span className="font-bold text-xl tracking-tighter uppercase">
+          ZeroBalance
+        </span>
       </Link>
 
-      <div className="relative mb-6 flex-shrink-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+      <div className="relative mb-8 flex-shrink-0">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text)] opacity-40" />
         <input
           type="text"
-          placeholder="Search..."
-          className="w-full bg-slate-100 dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-10 text-xs text-slate-900 dark:text-slate-200 focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
+          placeholder="Command Palette..."
+          className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl py-2.5 pl-10 text-xs text-[var(--text-h)] focus:border-flow-accent transition-all outline-none"
         />
       </div>
 
-      <nav className="flex-1 space-y-1 pr-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 px-2">
-          Overview
-        </p>
+      <nav className="flex-1 space-y-1">
+        <SectionHeader label="Overview" />
         <NavItem
           to="/dashboard"
           icon={<LayoutDashboard size={18} />}
@@ -85,16 +71,13 @@ const Sidebar = () => {
           label="Categories"
         />
 
-        <div className="pt-6">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 px-2">
-            Planning & Analytics
-          </p>
+        <div className="pt-8">
+          <SectionHeader label="Intelligence" />
           <NavItem
             to="/budget"
             icon={<Target size={18} />}
             label="Budget Limits"
           />
-          {/* Reports NavItem removed from here */}
           <NavItem
             to="/insights"
             icon={<TrendingUp size={18} />}
@@ -102,10 +85,8 @@ const Sidebar = () => {
           />
         </div>
 
-        <div className="pt-6">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 px-2">
-            System
-          </p>
+        <div className="pt-8">
+          <SectionHeader label="System" />
           <NavItem
             to="/alerts"
             icon={<Bell size={18} />}
@@ -125,34 +106,42 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      <div className="mt-auto flex items-center gap-3 p-2 border-t border-slate-200 dark:border-slate-800/50 pt-6 flex-shrink-0 bg-white dark:bg-[#0f1115]">
-        <div className="relative">
-          <img
-            src={`https://ui-avatars.com/api/?name=${savedUser?.name || "User"}&background=6366f1&color=fff`}
-            className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 object-cover"
-            alt="user"
-          />
-          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-indigo-500 border-2 border-white dark:border-[#0f1115] rounded-full"></div>
+      <div className="mt-auto pt-6 border-t border-[var(--border)] bg-transparent">
+        <div className="flex items-center gap-3 p-2 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--border)]">
+          <div className="relative">
+            <img
+              src={`https://ui-avatars.com/api/?name=${savedUser?.name || "User"}&background=6366f1&color=fff&bold=true`}
+              className="w-10 h-10 rounded-xl object-cover grayscale-[0.5] hover:grayscale-0 transition-all"
+              alt="user"
+            />
+            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[var(--surface)] rounded-full"></div>
+          </div>
+          <div className="overflow-hidden flex-1">
+            <p className="text-xs font-black text-[var(--text-h)] truncate uppercase tracking-tighter">
+              {savedUser?.name || "Guest User"}
+            </p>
+            <p className="text-[9px] truncate text-[var(--text)] opacity-60 font-bold uppercase tracking-widest">
+              {savedUser?.email ? "Pro Member" : "Guest"}
+            </p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="p-2 text-[var(--text)] hover:text-rose-500 transition-colors"
+            title="Logout"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
-        <div className="overflow-hidden flex-1 ml-1">
-          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
-            {savedUser?.name || "Guest User"}
-          </p>
-          <p className="text-[10px] truncate text-slate-500 tracking-tight">
-            {savedUser?.email || "not logged in"}
-          </p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
-          title="Logout"
-        >
-          <LogOut size={18} />
-        </button>
       </div>
     </aside>
   );
 };
+
+const SectionHeader = ({ label }: { label: string }) => (
+  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text)] opacity-30 mb-3 px-3">
+    {label}
+  </p>
+);
 
 const NavItem = ({
   icon,
@@ -168,16 +157,22 @@ const NavItem = ({
   <NavLink
     to={to}
     className={({ isActive }) => `
-      flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all group
-      ${isActive ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-[#1a1d23] hover:text-slate-900 dark:hover:text-white"}
+      flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 group
+      ${
+        isActive
+          ? "bg-flow-accent text-white shadow-xl shadow-flow-accent/20 translate-x-1"
+          : "text-[var(--text)] hover:bg-white/5 hover:text-[var(--text-h)]"
+      }
     `}
   >
     <div className="flex items-center gap-3">
-      <span className="transition-colors">{icon}</span>
-      <span className="text-sm font-medium">{label}</span>
+      <span className="transition-transform group-hover:scale-110">{icon}</span>
+      <span className="text-xs font-bold uppercase tracking-tight">
+        {label}
+      </span>
     </div>
     {badge && (
-      <span className="bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+      <span className="bg-flow-accent/20 text-flow-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-flow-accent/20">
         {badge}
       </span>
     )}

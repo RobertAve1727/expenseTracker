@@ -20,13 +20,12 @@ const AddTransactionModal: React.FC<Props> = ({
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     amount: "",
-    category: "", // Initialized as empty to be set once categories load
+    category: "",
     date: new Date().toISOString().split("T")[0],
     note: "",
     type: "expense",
   });
 
-  // Fetch your dynamic categories from the budget database
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -37,7 +36,6 @@ const AddTransactionModal: React.FC<Props> = ({
         if (data[0] && data[0].categoryLimits) {
           const categories = Object.keys(data[0].categoryLimits);
           setAvailableCategories(categories);
-          // Set default selection to the first available category
           if (categories.length > 0) {
             setFormData((prev) => ({ ...prev, category: categories[0] }));
           }
@@ -61,7 +59,6 @@ const AddTransactionModal: React.FC<Props> = ({
       const savedTx = await TransactionService.create(formData, userId);
       onAdd(savedTx);
       onClose();
-      // Reset State
       setFormData({
         amount: "",
         category: availableCategories[0] || "",
@@ -76,34 +73,37 @@ const AddTransactionModal: React.FC<Props> = ({
     }
   };
 
+  const inputClasses =
+    "w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl py-4 px-4 text-[var(--text-h)] outline-none focus:border-flow-accent/50 font-bold transition-all backdrop-blur-md";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm p-4 transition-all">
-      <div className="bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl transition-all">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-all text-left">
+      <div className="bg-[var(--surface)] border border-[var(--border)] w-full max-w-md rounded-[3rem] overflow-hidden shadow-2xl backdrop-blur-xl">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+        <div className="flex justify-between items-center p-8 border-b border-[var(--border)]/50">
+          <h2 className="text-2xl font-black text-[var(--text-h)] tracking-tighter">
             New Record
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            className="p-2 rounded-xl text-[var(--text)] opacity-50 hover:opacity-100 hover:bg-white/5 transition-all"
           >
-            <X size={20} />
+            <X size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-7 space-y-5">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
           {/* Type Switcher */}
-          <div className="flex bg-slate-100 dark:bg-[#0f1115] p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <div className="flex bg-black/20 p-1.5 rounded-2xl border border-[var(--border)]">
             {["expense", "income"].map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setFormData({ ...formData, type: t })}
-                className={`flex-1 py-2.5 text-xs font-bold rounded-xl capitalize transition-all ${
+                className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
                   formData.type === t
-                    ? "bg-indigo-600 dark:bg-[#6366f1] text-white shadow-md"
-                    : "text-slate-500"
+                    ? "bg-flow-accent text-white shadow-lg"
+                    : "text-[var(--text)] opacity-50"
                 }`}
               >
                 {t}
@@ -112,20 +112,23 @@ const AddTransactionModal: React.FC<Props> = ({
           </div>
 
           {/* Amount */}
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
-              Amount
+          <div className="space-y-2 text-left">
+            <label className="text-[10px] font-black text-[var(--text)] uppercase tracking-[0.2em] px-1 opacity-50">
+              Value
             </label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                <DollarSign size={18} />
+              {/* FIX: Added 'text-slate-900' for light mode visibility 
+        and 'dark:text-flow-accent' to preserve the cool vibe in dark mode.
+    */}
+              <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-900 dark:text-flow-accent">
+                <span className="font-black text-lg">₱</span>
               </div>
               <input
                 required
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold text-lg"
+                className={`${inputClasses} pl-12 text-xl tracking-tight`}
                 value={formData.amount}
                 onChange={(e) =>
                   setFormData({ ...formData, amount: e.target.value })
@@ -135,14 +138,14 @@ const AddTransactionModal: React.FC<Props> = ({
           </div>
 
           {/* Dynamic Category Dropdown */}
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
-              Category
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-[var(--text)] uppercase tracking-[0.2em] px-1 opacity-50">
+              Segment
             </label>
             <div className="relative">
               <select
                 required
-                className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 font-medium"
+                className={`${inputClasses} appearance-none cursor-pointer uppercase text-[11px] tracking-widest text-[var(--text-h)]`}
                 value={formData.category}
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
@@ -150,45 +153,53 @@ const AddTransactionModal: React.FC<Props> = ({
               >
                 {availableCategories.length > 0 ? (
                   availableCategories.map((cat) => (
-                    <option key={cat} value={cat}>
+                    <option
+                      key={cat}
+                      value={cat}
+                      className="bg-[#1a1d23] text-white"
+                    >
                       {cat}
                     </option>
                   ))
                 ) : (
-                  <option disabled value="">
-                    No categories found
+                  <option
+                    disabled
+                    value=""
+                    className="bg-[#1a1d23] text-[var(--text)] opacity-50"
+                  >
+                    No segments found
                   </option>
                 )}
               </select>
               <ChevronDown
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                size={16}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-flow-accent pointer-events-none opacity-100"
+                size={18}
               />
             </div>
           </div>
 
           {/* Date & Note */}
-          <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
-                Date
+          <div className="grid grid-cols-1 gap-5">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-[var(--text)] uppercase tracking-[0.2em] px-1 opacity-50">
+                Timestamp
               </label>
               <input
                 type="date"
-                className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium"
+                className={`${inputClasses} [color-scheme:dark]`}
                 value={formData.date}
                 onChange={(e) =>
                   setFormData({ ...formData, date: e.target.value })
                 }
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
-                Note
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-[var(--text)] uppercase tracking-[0.2em] px-1 opacity-50">
+                Metadata
               </label>
               <textarea
-                placeholder="Optional description..."
-                className="w-full bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none h-20 resize-none focus:ring-2 focus:ring-indigo-500/20"
+                placeholder="Optional notes..."
+                className={`${inputClasses} h-24 resize-none font-medium text-sm`}
                 value={formData.note}
                 onChange={(e) =>
                   setFormData({ ...formData, note: e.target.value })
@@ -200,9 +211,9 @@ const AddTransactionModal: React.FC<Props> = ({
           <button
             disabled={loading || availableCategories.length === 0}
             type="submit"
-            className="w-full bg-indigo-600 dark:bg-[#6366f1] text-white font-black py-4 rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-indigo-500/20 disabled:opacity-50"
+            className="w-full bg-flow-accent text-white font-black py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-flow-accent/20 disabled:opacity-30 uppercase text-xs tracking-[0.2em]"
           >
-            {loading ? "Syncing..." : "Add Transaction"}
+            {loading ? "Syncing..." : "Commit Transaction"}
           </button>
         </form>
       </div>

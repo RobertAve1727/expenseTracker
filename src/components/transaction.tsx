@@ -32,7 +32,7 @@ const TransactionPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [txToDelete, setTxToDelete] = useState<string | null>(null);
 
-  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  const currentUser = JSON.parse(sessionStorage.getItem("user") || "null");
   const currentUserId = currentUser?.id;
 
   const loadData = async () => {
@@ -92,43 +92,45 @@ const TransactionPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 p-6 lg:p-10 bg-slate-50 dark:bg-[#0f1115] min-h-screen">
+    <div className="flex-1 p-6 lg:p-10 bg-transparent min-h-screen">
       <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-4xl font-black text-[var(--text-h)] tracking-tighter">
               Ledger
             </h1>
-            <p className="text-slate-500 text-sm mt-1 font-bold uppercase tracking-widest flex items-center gap-2">
-              <Clock size={14} className="text-indigo-500" />{" "}
-              {currentUser?.name}'s Stream
+            <p className="text-[var(--text)] text-xs mt-2 font-black uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+              <Clock size={14} className="text-flow-accent" />{" "}
+              {currentUser?.name || "User"}'s Financial Stream
             </p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-2 bg-indigo-600 dark:bg-[#6366f1] text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-indigo-500/20 active:scale-95 transition-all"
+            className="flex items-center justify-center gap-3 bg-flow-accent text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-flow-accent/20 active:scale-95 transition-all uppercase text-xs tracking-widest"
           >
-            <Plus size={20} strokeWidth={3} /> New Entry
+            <Plus size={18} strokeWidth={3} /> New Entry
           </button>
         </div>
 
+        {/* Filter Bar */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="relative md:col-span-2 group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors w-5 h-5" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--text)] opacity-40 group-focus-within:text-flow-accent group-focus-within:opacity-100 transition-all w-5 h-5" />
             <input
-              placeholder="Search descriptions..."
-              className="w-full pl-14 pr-4 py-4 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[24px] outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold"
+              placeholder="Query history..."
+              className="w-full pl-14 pr-4 py-4 bg-[var(--surface)] border border-[var(--border)] rounded-[20px] outline-none focus:border-flow-accent/50 text-[var(--text-h)] font-bold text-sm backdrop-blur-md transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="relative">
+          <div className="relative group">
             <select
-              className="w-full px-6 py-4 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[24px] outline-none appearance-none font-bold text-indigo-500"
+              className="w-full px-6 py-4 bg-[var(--surface)] border border-[var(--border)] rounded-[20px] outline-none appearance-none font-black text-xs uppercase tracking-widest text-flow-accent backdrop-blur-md cursor-pointer focus:border-flow-accent/50"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
             >
-              <option value="All">All Categories</option>
+              <option value="All">All Segments</option>
               {availableCategories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -137,78 +139,97 @@ const TransactionPage: React.FC = () => {
             </select>
             <Filter
               size={16}
-              className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-[var(--text)] opacity-40 pointer-events-none"
             />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800/50 rounded-[3rem] overflow-hidden shadow-2xl">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-50 dark:border-slate-800/50 text-slate-400 text-[10px] uppercase font-black tracking-[0.2em]">
-                <th className="px-10 py-8">Label</th>
-                <th className="px-10 py-8">Segment</th>
-                <th className="px-10 py-8">Timestamp</th>
-                <th className="px-10 py-8">Value</th>
-                <th className="px-10 py-8 text-right">Delete</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/20">
-              {filteredTransactions.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-slate-50/50 dark:hover:bg-indigo-500/5 transition-colors group"
-                >
-                  <td className="px-10 py-6">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-3 rounded-2xl ${item.type === "income" ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}
-                      >
-                        {item.type === "income" ? (
-                          <ArrowDownLeft size={18} />
-                        ) : (
-                          <ArrowUpRight size={18} />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-sm font-black dark:text-white">
-                          {item.note || "General"}
-                        </p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase">
-                          {item.type}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-10 py-6">
-                    <span className="flex items-center gap-2 text-[10px] font-black uppercase text-indigo-500 bg-indigo-500/5 px-4 py-2 rounded-xl border border-indigo-500/10 w-fit">
-                      {getIcon(item.category)} {item.category}
-                    </span>
-                  </td>
-                  <td className="px-10 py-6 text-xs text-slate-500 font-bold">
-                    {item.date}
-                  </td>
-                  <td
-                    className={`px-10 py-6 font-black text-sm ${item.type === "income" ? "text-emerald-500" : "dark:text-white"}`}
-                  >
-                    {item.type === "income" ? "+" : "-"}₱{" "}
-                    {formatCurrency(item.amount)}
-                  </td>
-                  <td className="px-10 py-6 text-right">
-                    <button
-                      onClick={() => {
-                        setTxToDelete(item.id);
-                        setIsDeleteModalOpen(true);
-                      }}
-                      className="p-3 text-slate-300 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
+        {/* Table Section */}
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-md">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--border)] text-[var(--text)] text-[10px] uppercase font-black tracking-[0.3em] opacity-50">
+                  <th className="px-10 py-8">Label</th>
+                  <th className="px-10 py-8">Segment</th>
+                  <th className="px-10 py-8">Timestamp</th>
+                  <th className="px-10 py-8">Value</th>
+                  <th className="px-10 py-8 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)]/30">
+                {filteredTransactions.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-white/5 dark:hover:bg-white/5 transition-colors group"
+                  >
+                    <td className="px-10 py-6">
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`p-3 rounded-xl ${
+                            item.type === "income"
+                              ? "bg-emerald-500/10 text-emerald-500"
+                              : "bg-rose-500/10 text-rose-500"
+                          }`}
+                        >
+                          {item.type === "income" ? (
+                            <ArrowDownLeft size={18} />
+                          ) : (
+                            <ArrowUpRight size={18} />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-[var(--text-h)]">
+                            {item.note || "General"}
+                          </p>
+                          <p className="text-[10px] text-[var(--text)] font-black uppercase tracking-tighter opacity-50">
+                            {item.type}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-10 py-6">
+                      <span className="flex items-center gap-2 text-[10px] font-black uppercase text-flow-accent bg-flow-accent/5 px-4 py-2 rounded-lg border border-flow-accent/10 w-fit">
+                        {getIcon(item.category)} {item.category}
+                      </span>
+                    </td>
+                    <td className="px-10 py-6 text-[11px] text-[var(--text)] font-bold opacity-70">
+                      {item.date}
+                    </td>
+                    <td
+                      className={`px-10 py-6 font-black text-sm tracking-tight ${
+                        item.type === "income"
+                          ? "text-emerald-500"
+                          : "text-[var(--text-h)]"
+                      }`}
+                    >
+                      {item.type === "income" ? "+" : "-"}₱{" "}
+                      {formatCurrency(item.amount)}
+                    </td>
+                    <td className="px-10 py-6 text-right">
+                      <button
+                        onClick={() => {
+                          setTxToDelete(item.id);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="p-3 text-[var(--text)] hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredTransactions.length === 0 && (
+            <div className="py-20 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text)] opacity-30">
+                No data points found in this segment
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

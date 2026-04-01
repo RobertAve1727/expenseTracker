@@ -114,31 +114,32 @@ const Dashboard = () => {
 
   if (isLoading)
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 dark:bg-[#0f1115]">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+      <div className="flex min-h-screen w-full items-center justify-center bg-transparent">
+        <Loader2 className="w-10 h-10 animate-spin text-flow-accent" />
       </div>
     );
 
   return (
-    <div className="p-6 lg:p-10 bg-slate-50 dark:bg-[#0f1115] transition-colors duration-500 min-h-full">
+    <div className="p-6 lg:p-10 bg-transparent min-h-full">
       <div className="max-w-7xl mx-auto">
         <header className="mb-10">
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-4xl font-black text-[var(--text-h)] tracking-tighter">
             Hi, {user?.name || "Guest"}
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-widest mt-1">
-            Financial Overview
+          <p className="text-[var(--text)] text-xs font-black uppercase tracking-[0.2em] mt-2 opacity-70">
+            Financial Intelligence Overview
           </p>
         </header>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
-          <section className="xl:col-span-2 bg-white dark:bg-[#1a1d23] p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
+          {/* Main Chart */}
+          <section className="xl:col-span-2 bg-[var(--surface)] p-8 rounded-[2rem] border border-[var(--border)] backdrop-blur-md shadow-2xl">
             <div className="flex justify-between items-center mb-8">
-              <h3 className="text-lg font-black dark:text-white">
-                Daily Transactions
+              <h3 className="text-lg font-black text-[var(--text-h)] uppercase tracking-widest">
+                Activity
               </h3>
-              <span className="text-[10px] font-black uppercase text-indigo-500 bg-indigo-500/5 px-3 py-1.5 rounded-lg border border-indigo-500/10">
-                Weekly Flux
+              <span className="text-[10px] font-black uppercase text-flow-accent bg-flow-accent/5 px-3 py-1.5 rounded-full border border-flow-accent/10">
+                7-Day Flux
               </span>
             </div>
             <div className="h-[350px] w-full">
@@ -148,39 +149,51 @@ const Dashboard = () => {
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="#334155"
-                      opacity={0.1}
+                      stroke="currentColor"
+                      opacity={0.05}
                     />
                     <XAxis
                       dataKey="date"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
+                      tick={{
+                        fill: "var(--text)",
+                        fontSize: 10,
+                        fontWeight: 700,
+                      }}
                       dy={10}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
+                      tick={{
+                        fill: "var(--text)",
+                        fontSize: 10,
+                        fontWeight: 700,
+                      }}
                     />
                     <Tooltip
                       cursor={{ fill: "rgba(99, 102, 241, 0.05)" }}
                       contentStyle={{
-                        borderRadius: "20px",
-                        border: "none",
-                        backgroundColor: "#1e293b",
-                        color: "#fff",
+                        borderRadius: "12px",
+                        border: "1px solid var(--border)",
+                        backgroundColor: "var(--surface)",
+                        color: "var(--text-h)",
                       }}
                     />
                     <Bar
                       dataKey="displayAmount"
-                      radius={[8, 8, 0, 0]}
+                      radius={[6, 6, 0, 0]}
                       barSize={32}
                     >
                       {barChartData.map((entry, index) => (
                         <Cell
                           key={index}
-                          fill={entry.type === "income" ? "#10b981" : "#6366f1"}
+                          fill={
+                            entry.type === "income"
+                              ? "#10b981"
+                              : "var(--flow-accent, #6366f1)"
+                          }
                         />
                       ))}
                     </Bar>
@@ -205,8 +218,9 @@ const Dashboard = () => {
               icon={<TrendingUp size={24} />}
               color="text-emerald-500 bg-emerald-500/5 border-emerald-500/10"
             />
-            <section className="bg-white dark:bg-[#1a1d23] p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 flex-1 flex flex-col items-center">
-              <h3 className="text-lg font-black w-full mb-6 dark:text-white">
+            {/* Spending Map */}
+            <section className="bg-[var(--surface)] p-8 rounded-[2rem] border border-[var(--border)] backdrop-blur-md flex-1 flex flex-col items-center">
+              <h3 className="text-sm font-black w-full mb-6 text-[var(--text-h)] uppercase tracking-widest">
                 Spending Map
               </h3>
               <div className="relative h-[220px] w-full">
@@ -230,10 +244,10 @@ const Dashboard = () => {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      <p className="text-[10px] font-black text-[var(--text)] uppercase tracking-widest opacity-50">
                         Expenses
                       </p>
-                      <p className="text-xl font-black dark:text-white">
+                      <p className="text-xl font-black text-[var(--text-h)]">
                         ₱{totals.rawExpense.toLocaleString()}
                       </p>
                     </div>
@@ -247,12 +261,12 @@ const Dashboard = () => {
         </div>
 
         {/* Budget Watch */}
-        <section className="bg-white dark:bg-[#1a1d23] p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none mb-10">
+        <section className="bg-[var(--surface)] p-8 rounded-[2rem] border border-[var(--border)] backdrop-blur-md shadow-2xl mb-10">
           <div className="flex items-center gap-3 mb-8">
-            <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-500">
+            <div className="p-2 bg-flow-accent/10 rounded-xl text-flow-accent">
               <Target size={20} />
             </div>
-            <h3 className="text-lg font-black dark:text-white uppercase tracking-wider">
+            <h3 className="text-lg font-black text-[var(--text-h)] uppercase tracking-widest">
               Budget Watch
             </h3>
           </div>
@@ -265,25 +279,25 @@ const Dashboard = () => {
                 return (
                   <div
                     key={category}
-                    className="space-y-3 p-4 rounded-[2rem] bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50"
+                    className="space-y-4 p-5 rounded-[1.5rem] bg-black/5 dark:bg-white/5 border border-[var(--border)]"
                   >
                     <div className="flex justify-between items-end">
-                      <span className="text-xs font-black dark:text-slate-300 uppercase tracking-tighter">
+                      <span className="text-xs font-black text-[var(--text-h)] uppercase">
                         {category}
                       </span>
                       <span
-                        className={`text-[10px] font-bold ${isOver ? "text-rose-500" : "text-slate-400"}`}
+                        className={`text-[10px] font-bold ${isOver ? "text-rose-500" : "text-[var(--text)]"}`}
                       >
                         {limit > 0 ? Math.round(percentage) : 0}%
                       </span>
                     </div>
-                    <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-[var(--border)] rounded-full overflow-hidden">
                       <div
-                        className={`h-full transition-all duration-1000 ${isOver ? "bg-rose-500" : "bg-indigo-500"}`}
+                        className={`h-full transition-all duration-1000 ${isOver ? "bg-rose-500" : "bg-flow-accent"}`}
                         style={{ width: `${limit > 0 ? percentage : 0}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <div className="flex justify-between text-[9px] font-bold text-[var(--text)] uppercase tracking-tighter opacity-70">
                       <span>₱{spent.toLocaleString()}</span>
                       <span>Limit ₱{limit.toLocaleString()}</span>
                     </div>
@@ -291,8 +305,8 @@ const Dashboard = () => {
                 );
               })
             ) : (
-              <div className="col-span-full py-4 text-center text-slate-400 text-xs font-bold uppercase tracking-widest opacity-50">
-                No budget limits set.
+              <div className="col-span-full py-10 text-center text-[var(--text)] text-xs font-bold uppercase tracking-widest opacity-30">
+                No active budget constraints.
               </div>
             )}
           </div>
@@ -303,12 +317,12 @@ const Dashboard = () => {
 };
 
 const MetricCard = ({ label, value, icon, color }: any) => (
-  <div className="bg-white dark:bg-[#1a1d23] p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 flex items-center justify-between group transition-all hover:border-indigo-500/30">
+  <div className="bg-[var(--surface)] p-8 rounded-[2rem] border border-[var(--border)] backdrop-blur-md flex items-center justify-between group transition-all hover:translate-y-[-2px] hover:border-flow-accent/40">
     <div>
-      <p className="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-[0.15em]">
+      <p className="text-[10px] font-black text-[var(--text)] uppercase mb-1 tracking-[0.2em] opacity-60">
         {label}
       </p>
-      <h3 className="text-3xl font-black dark:text-white tracking-tight">
+      <h3 className="text-3xl font-black text-[var(--text-h)] tracking-tighter">
         {value}
       </h3>
     </div>
@@ -321,11 +335,9 @@ const MetricCard = ({ label, value, icon, color }: any) => (
 );
 
 const NoDataPlaceholder = ({ message }: { message: string }) => (
-  <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3">
-    <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-      <AlertCircle size={20} className="opacity-40" />
-    </div>
-    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">
+  <div className="h-full flex flex-col items-center justify-center text-[var(--text)] gap-3 opacity-40">
+    <AlertCircle size={20} />
+    <span className="text-[10px] font-black uppercase tracking-widest">
       {message}
     </span>
   </div>
