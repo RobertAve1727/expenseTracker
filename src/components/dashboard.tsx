@@ -36,19 +36,25 @@ const Dashboard = () => {
 
       try {
         setIsLoading(true);
-        const [transData, budgetData] = await Promise.all([
+        const [transData, budgetRes] = await Promise.all([
           TransactionService.getAllByUserId(currentUserId),
-          fetch(
-            `http://localhost:5000/budgetLimits?userId=${currentUserId}`,
-          ).then((res) => res.json()),
+          // CHANGE THIS: Use the correct endpoint (/budgets)
+          fetch(`http://localhost:5000/budgets?userId=${currentUserId}`).then(
+            (res) => res.json(),
+          ),
         ]);
 
         setTransactions(transData || []);
-        const limitMap: Record<string, number> = {};
-        budgetData.forEach((b: any) => {
-          limitMap[b.category] = b.limit || 0;
-        });
-        setBudgetLimits(limitMap);
+
+        // CHANGE THIS: Budget data is likely an array with one object [0]
+        // containing a categoryLimits record
+        if (budgetRes && budgetRes.length > 0) {
+          // In Categories.tsx you used setBudgetData(bData[0])
+          // budgetRes[0].categoryLimits is what you actually need to watch
+          setBudgetLimits(budgetRes[0].categoryLimits || {});
+        } else {
+          setBudgetLimits({});
+        }
       } catch (err) {
         console.error("Dashboard Sync Failed:", err);
       } finally {

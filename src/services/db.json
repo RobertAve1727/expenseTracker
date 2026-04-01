@@ -5,10 +5,59 @@
       "email": "robert@gmail.com",
       "password": "123",
       "id": "ij09EGe30M0"
+    },
+    {
+      "name": "Quiela",
+      "email": "quiela@gmail.com",
+      "password": "123",
+      "id": "Jho3ltgNk7I"
     }
   ],
-  "transactions": [],
-  "budgets": [],
+  "transactions": [
+    {
+      "id": "TvGJKXIYMQc",
+      "userId": "Jho3ltgNk7I",
+      "type": "expense",
+      "date": "April 1, 2026",
+      "amount": "55",
+      "status": "Completed",
+      "note": "Fries sa backgate",
+      "category": "FOOD"
+    },
+    {
+      "id": "3fTGBU2pJ3s",
+      "userId": "Jho3ltgNk7I",
+      "type": "expense",
+      "date": "April 1, 2026",
+      "amount": "450",
+      "status": "Completed",
+      "note": "GE UTS",
+      "category": "Uncategorized"
+    },
+    {
+      "id": "bNxqfLZQCo8",
+      "userId": "Jho3ltgNk7I",
+      "type": "expense",
+      "date": "April 1, 2026",
+      "amount": "850",
+      "status": "Completed",
+      "note": "ACCTG 301",
+      "category": "Uncategorized"
+    }
+  ],
+  "budgets": [
+    {
+      "userId": "Jho3ltgNk7I",
+      "masterBudget": 4500,
+      "categoryLimits": {
+        "FOOD": 2500,
+        "FARE": 350,
+        "TIKTOK FINDS": 500,
+        "IMPROMPTU": 650
+      },
+      "id": "n7zHHux-BWI"
+    }
+  ],
   "categories": [
     {
       "name": "PATUPI",
@@ -16,6 +65,34 @@
       "color": "bg-flow-accent",
       "userId": "ij09EGe30M0",
       "id": "50M4RdmqW20"
+    },
+    {
+      "name": "FOOD",
+      "icon": "Utensils",
+      "color": "bg-flow-accent",
+      "userId": "Jho3ltgNk7I",
+      "id": "8HAdTXOTGLc"
+    },
+    {
+      "name": "FARE",
+      "icon": "Tag",
+      "color": "bg-flow-accent",
+      "userId": "Jho3ltgNk7I",
+      "id": "fW8h9yIQ6gk"
+    },
+    {
+      "name": "TIKTOK FINDS",
+      "icon": "Briefcase",
+      "color": "bg-flow-accent",
+      "userId": "Jho3ltgNk7I",
+      "id": "cMROddJcMPI"
+    },
+    {
+      "name": "IMPROMPTU",
+      "icon": "Tag",
+      "color": "bg-flow-accent",
+      "userId": "Jho3ltgNk7I",
+      "id": "AtTnRSlSVJM"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
