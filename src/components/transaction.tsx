@@ -12,6 +12,9 @@ import {
   Lightbulb,
   Clock,
   Tag,
+  ShoppingBag,
+  Zap,
+  Briefcase,
 } from "lucide-react";
 import type { Transaction } from "../services";
 import { TransactionService } from "../services/transactionService";
@@ -22,11 +25,10 @@ const TransactionPage: React.FC = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [availableCategories, setAvailableCategories] = useState<string[]>([
-    "Food",
-    "Transport",
-    "Bills",
-  ]);
+
+  // FIX: Initialized as empty. These will be populated from your DB categories.
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("All");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -38,19 +40,21 @@ const TransactionPage: React.FC = () => {
   const loadData = async () => {
     if (!currentUserId) return;
     try {
-      const [txData, budgetRes] = await Promise.all([
+      // We fetch transactions and your custom categories simultaneously
+      const [txData, catRes] = await Promise.all([
         TransactionService.getAllByUserId(currentUserId),
-        fetch(`http://localhost:5000/budgets?userId=${currentUserId}`),
+        fetch(`http://localhost:5000/categories?userId=${currentUserId}`),
       ]);
 
       setTransactions(txData || []);
 
-      const budgets = await budgetRes.json();
-      if (budgets.length > 0) {
-        setAvailableCategories(Object.keys(budgets[0].categoryLimits));
+      const categories = await catRes.json();
+      if (Array.isArray(categories)) {
+        // Extract the names of the custom buckets the user created
+        setAvailableCategories(categories.map((cat: any) => cat.name));
       }
     } catch (err) {
-      console.error(err);
+      console.error("Ledger sync error:", err);
     }
   };
 
@@ -71,18 +75,39 @@ const TransactionPage: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
+  // FIX: Dynamic Icon Mapper
+  // Since categories are now custom strings, we map common keywords to icons
+  // and provide a default 'Tag' for unique user-defined names.
   const getIcon = (category: string) => {
     const iconSize = 14;
-    switch (category) {
-      case "Food":
-        return <Utensils size={iconSize} />;
-      case "Transport":
-        return <Car size={iconSize} />;
-      case "Bills":
-        return <Lightbulb size={iconSize} />;
-      default:
-        return <Tag size={iconSize} />;
-    }
+    const label = category.toUpperCase();
+
+    if (label.includes("FOOD") || label.includes("EAT"))
+      return <Utensils size={iconSize} />;
+    if (
+      label.includes("TRANS") ||
+      label.includes("CAR") ||
+      label.includes("RIDE")
+    )
+      return <Car size={iconSize} />;
+    if (
+      label.includes("BILL") ||
+      label.includes("POWER") ||
+      label.includes("UTIL")
+    )
+      return <Lightbulb size={iconSize} />;
+    if (label.includes("SHOP") || label.includes("BUY"))
+      return <ShoppingBag size={iconSize} />;
+    if (
+      label.includes("WORK") ||
+      label.includes("JOB") ||
+      label.includes("SALARY")
+    )
+      return <Briefcase size={iconSize} />;
+    if (label.includes("URGENT") || label.includes("ZAP"))
+      return <Zap size={iconSize} />;
+
+    return <Tag size={iconSize} />;
   };
 
   const formatCurrency = (amount: string | number) => {
@@ -98,7 +123,7 @@ const TransactionPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
             <h1 className="text-4xl font-black text-[var(--text-h)] tracking-tighter">
-              Ledger
+              Transaction
             </h1>
             <p className="text-[var(--text)] text-xs mt-2 font-black uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
               <Clock size={14} className="text-flow-accent" />{" "}
@@ -118,22 +143,23 @@ const TransactionPage: React.FC = () => {
           <div className="relative md:col-span-2 group">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--text)] opacity-40 group-focus-within:text-flow-accent group-focus-within:opacity-100 transition-all w-5 h-5" />
             <input
-              placeholder="Query history..."
+              placeholder="Search transaction..."
               className="w-full pl-14 pr-4 py-4 bg-[var(--surface)] border border-[var(--border)] rounded-[20px] outline-none focus:border-flow-accent/50 text-[var(--text-h)] font-bold text-sm backdrop-blur-md transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
           <div className="relative group">
             <select
               className="w-full px-6 py-4 bg-[var(--surface)] border border-[var(--border)] rounded-[20px] outline-none appearance-none font-black text-xs uppercase tracking-widest text-flow-accent backdrop-blur-md cursor-pointer focus:border-flow-accent/50"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
             >
-              <option value="All">All Segments</option>
+              <option value="All">All Categories</option>
               {availableCategories.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat}
+                  {cat.toUpperCase()}
                 </option>
               ))}
             </select>
@@ -151,7 +177,7 @@ const TransactionPage: React.FC = () => {
               <thead>
                 <tr className="border-b border-[var(--border)] text-[var(--text)] text-[10px] uppercase font-black tracking-[0.3em] opacity-50">
                   <th className="px-10 py-8">Label</th>
-                  <th className="px-10 py-8">Segment</th>
+                  <th className="px-10 py-8">Category</th>
                   <th className="px-10 py-8">Timestamp</th>
                   <th className="px-10 py-8">Value</th>
                   <th className="px-10 py-8 text-right">Actions</th>

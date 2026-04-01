@@ -1,5 +1,12 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { CheckCircle2, AlertTriangle, Edit2, Save, X } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertTriangle,
+  Edit2,
+  Save,
+  X,
+  Loader2,
+} from "lucide-react"; // Added Loader2 for a nicer sync icon
 import { useAuth } from "../services/useAuth";
 import { TransactionService } from "../services/transactionService";
 import { BudgetService } from "../services/budgetService";
@@ -12,12 +19,9 @@ const BudgetLimit = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const [masterBudget, setMasterBudget] = useState<number | "">(0);
-  const [limits, setLimits] = useState<Record<string, number | "">>({
-    Food: 0,
-    Transport: 0,
-    Bills: 0,
-    Entertainment: 0,
-  });
+
+  // FIX: Initialize as an empty object to remove hard-coded categories
+  const [limits, setLimits] = useState<Record<string, number | "">>({});
 
   const loadAllData = useCallback(async () => {
     const currentUserId =
@@ -35,13 +39,20 @@ const BudgetLimit = () => {
 
       setTransactions(transactionData || []);
 
+      // If categories exist, we map them. Even if no budget exists yet,
+      // we show the categories with 0 limits so the user can set them.
+      const mergedLimits: Record<string, number> = {};
+
+      if (Array.isArray(categoryData)) {
+        categoryData.forEach((cat: any) => {
+          // Priority: 1. Saved Budget Limit, 2. Default to 0
+          mergedLimits[cat.name] = budgetEntry?.categoryLimits?.[cat.name] || 0;
+        });
+      }
+
+      setLimits(mergedLimits);
       if (budgetEntry) {
         setMasterBudget(budgetEntry.masterBudget);
-        const mergedLimits: Record<string, number> = {};
-        categoryData.forEach((cat: any) => {
-          mergedLimits[cat.name] = budgetEntry.categoryLimits[cat.name] || 0;
-        });
-        setLimits(mergedLimits);
       }
     } catch (err) {
       console.error("Load failed:", err);
@@ -120,8 +131,11 @@ const BudgetLimit = () => {
 
   if (isLoading)
     return (
-      <div className="flex-1 min-h-screen flex items-center justify-center bg-[var(--bg)] text-[var(--text)] font-black tracking-widest uppercase text-[10px]">
-        Syncing Ledger...
+      <div className="flex-1 min-h-screen flex flex-col gap-4 items-center justify-center bg-[var(--bg)] text-[var(--text)]">
+        <Loader2 className="animate-spin text-flow-accent" size={32} />
+        <span className="font-black tracking-widest uppercase text-[10px] opacity-50">
+          Syncing Ledger...
+        </span>
       </div>
     );
 
@@ -166,7 +180,7 @@ const BudgetLimit = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        {/* Master Card - Dark Glassmorphism */}
+        {/* Master Card */}
         <div className="lg:col-span-2 bg-[#16191e] p-10 rounded-[3.5rem] relative overflow-hidden flex flex-col justify-between min-h-[300px] border border-slate-800 shadow-2xl">
           <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-flow-accent/5 blur-[100px]" />
           <div className="relative z-10">
@@ -251,7 +265,7 @@ const BudgetLimit = () => {
         </div>
       </div>
 
-      {/* Segment Capsules */}
+      {/* Dynamic Segment Capsules */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {budgetData.cards.map((card) => (
           <div
@@ -306,6 +320,15 @@ const BudgetLimit = () => {
             </div>
           </div>
         ))}
+
+        {/* Placeholder if no categories exist */}
+        {budgetData.cards.length === 0 && !isLoading && (
+          <div className="col-span-full py-20 text-center border-2 border-dashed border-[var(--border)] rounded-[3rem] opacity-30">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em]">
+              No Segments Created
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

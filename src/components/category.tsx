@@ -102,10 +102,12 @@ const Categories = () => {
     fetchData();
   }, []);
 
+  // FIXED ICON RESOLUTION HELPER
   const getIcon = (name: string) => {
-    if (name === "Uncategorized") return <HelpCircle size={22} />;
+    if (name === "Uncategorized")
+      return <HelpCircle size={24} strokeWidth={2.5} />;
     const Icon = (LucideIcons as any)[name] || Tag;
-    return <Icon size={22} />;
+    return <Icon size={24} strokeWidth={2.5} />;
   };
 
   if (loading)
@@ -140,14 +142,14 @@ const Categories = () => {
                 onClick={() => setViewType(type)}
                 className={`p-3 rounded-xl transition-all duration-300 ${
                   viewType === type
-                    ? "bg-flow-accent text-white shadow-lg shadow-flow-accent/20"
+                    ? "bg-flow-accent text-[#1a1a1a] shadow-lg shadow-flow-accent/20"
                     : "text-[var(--text)] opacity-40 hover:opacity-100"
                 }`}
               >
                 {type === "grid" ? (
-                  <LayoutGrid size={20} />
+                  <LayoutGrid size={20} strokeWidth={2.5} />
                 ) : (
-                  <List size={20} />
+                  <List size={20} strokeWidth={2.5} />
                 )}
               </button>
             ))}
@@ -174,7 +176,7 @@ const Categories = () => {
           }`}
         >
           {filtered.map((cat) => {
-            const limit = budgetData?.categoryLimits[cat.name] || 0;
+            const limit = budgetData?.categoryLimits?.[cat.name] || 0;
             const spent = transactions
               .filter((t) => t.category === cat.name && t.type === "expense")
               .reduce(
@@ -196,9 +198,8 @@ const Categories = () => {
                 className="relative bg-[var(--surface)] p-8 rounded-[3.5rem] border border-[var(--border)] shadow-2xl group transition-all duration-500 hover:translate-y-[-8px] hover:border-flow-accent/30 backdrop-blur-lg"
               >
                 <div className="flex justify-between items-start mb-8">
-                  <div
-                    className={`p-5 rounded-[2rem] ${cat.color} bg-opacity-20 ${cat.color.replace("bg-", "text-")} transition-all duration-500 group-hover:rotate-12 border border-white/5`}
-                  >
+                  {/* FIXED ICON CONTAINER: High contrast Teal/Black */}
+                  <div className="p-5 rounded-[2rem] bg-flow-accent text-[#1a1a1a] shadow-lg shadow-flow-accent/20 transition-all duration-500 group-hover:rotate-12 group-hover:scale-110 border border-white/20">
                     {getIcon(cat.icon)}
                   </div>
 
@@ -228,7 +229,7 @@ const Categories = () => {
                   </div>
                 </div>
 
-                <h3 className="text-2xl font-black text-[var(--text-h)] mb-2 tracking-tighter">
+                <h3 className="text-1xl font-black text-[var(--text-h)] mb-2 tracking-tighter">
                   {cat.name}
                 </h3>
 
@@ -244,7 +245,7 @@ const Categories = () => {
                   </span>
                 </div>
 
-                {/* Custom Progress Bar */}
+                {/* Progress Bar */}
                 <div className="h-4 w-full bg-black/20 rounded-full overflow-hidden mb-4 border border-[var(--border)]">
                   <div
                     className={`h-full transition-all duration-[1500ms] ease-out shadow-lg ${
@@ -281,7 +282,7 @@ const Categories = () => {
             onClick={() => setIsModalOpen(true)}
             className="flex flex-col items-center justify-center p-10 rounded-[3.5rem] border-4 border-dashed border-[var(--border)] text-[var(--text)] opacity-30 hover:opacity-100 hover:border-flow-accent/50 hover:text-flow-accent transition-all duration-500 min-h-[300px] group bg-white/5 shadow-inner"
           >
-            <div className="p-6 rounded-full bg-white/5 mb-6 group-hover:bg-flow-accent group-hover:text-white group-hover:scale-110 transition-all duration-500 shadow-xl">
+            <div className="p-6 rounded-full bg-white/5 mb-6 group-hover:bg-flow-accent group-hover:text-[#1a1a1a] group-hover:scale-110 transition-all duration-500 shadow-xl">
               <Plus size={40} strokeWidth={3} />
             </div>
             <span className="font-black uppercase text-[11px] tracking-[0.3em]">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronDown, Calendar, Hash, Notebook } from "lucide-react";
 import type { Transaction } from "../services";
 import { TransactionService } from "../services/transactionService";
 
@@ -26,22 +26,31 @@ const AddTransactionModal: React.FC<Props> = ({
     type: "expense",
   });
 
+  // SYNC: Fetching custom segments directly from the categories table
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/budgets?userId=${userId}`,
+          `http://localhost:5000/categories?userId=${userId}`,
         );
         const data = await res.json();
-        if (data[0] && data[0].categoryLimits) {
-          const categories = Object.keys(data[0].categoryLimits);
-          setAvailableCategories(categories);
-          if (categories.length > 0) {
-            setFormData((prev) => ({ ...prev, category: categories[0] }));
+
+        if (Array.isArray(data) && data.length > 0) {
+          const categoryNames = data.map((cat: any) => cat.name);
+          setAvailableCategories(categoryNames);
+
+          // Auto-select the first category if current selection is invalid or empty
+          if (
+            !formData.category ||
+            !categoryNames.includes(formData.category)
+          ) {
+            setFormData((prev) => ({ ...prev, category: categoryNames[0] }));
           }
+        } else {
+          setAvailableCategories([]);
         }
       } catch (error) {
-        console.error("Failed to sync categories:", error);
+        console.error("Stream Sync Error:", error);
       }
     };
 
@@ -52,11 +61,14 @@ const AddTransactionModal: React.FC<Props> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.category) return;
+
     setLoading(true);
     try {
       const savedTx = await TransactionService.create(formData, userId);
       onAdd(savedTx);
-      onClose();
+
+      // Reset form state for next entry
       setFormData({
         amount: "",
         category: availableCategories[0] || "",
@@ -64,23 +76,21 @@ const AddTransactionModal: React.FC<Props> = ({
         note: "",
         type: "expense",
       });
+      onClose();
     } catch (error) {
-      console.error("Save failed:", error);
+      console.error("Entry initialization failed:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // IDENTICAL: Fixed background logic, variable-based theme classes.
   const inputClasses =
-    "w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl py-4 px-5 text-[var(--text-h)] outline-none focus:border-flow-accent/50 font-bold transition-all backdrop-blur-md";
+    "w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl py-4 px-5 text-[var(--text-h)] outline-none focus:border-flow-accent/50 font-bold transition-all backdrop-blur-md placeholder:opacity-20";
 
   return (
-    // FIX: Back to theme variable background and blur
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 transition-all text-left">
-      {/* MODAL BODY: Theme variable background and blur (like in image_1.png) */}
       <div className="bg-[var(--surface)] border border-[var(--border)] w-full max-w-md rounded-[3rem] overflow-hidden shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-200">
-        {/* Header: Fixed contrast from text-slate-400 to text-[var(--text-h)] */}
+        {/* Header */}
         <div className="flex justify-between items-center p-8 border-b border-[var(--border)]/50">
           <h2 className="text-3xl font-black text-[var(--text-h)] tracking-tighter">
             New Record
@@ -96,8 +106,8 @@ const AddTransactionModal: React.FC<Props> = ({
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           {/* Type Switcher */}
           <div className="space-y-3">
-            <label className="text-[12px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.25em] px-1">
-              Transaction Flow
+            <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
+              Flow Direction
             </label>
             <div className="flex bg-black/20 p-1.5 rounded-2xl border border-[var(--border)]">
               {["expense", "income"].map((t) => (
@@ -119,7 +129,7 @@ const AddTransactionModal: React.FC<Props> = ({
 
           {/* Amount */}
           <div className="space-y-3">
-            <label className="text-[12px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.25em] px-1">
+            <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
               Value
             </label>
             <div className="relative">
@@ -140,15 +150,15 @@ const AddTransactionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Segment Dropdown */}
+          {/* Segment Dropdown - Purely Dynamic */}
           <div className="space-y-3">
-            <label className="text-[12px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.25em] px-1">
-              Category
+            <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
+              Active Segment
             </label>
             <div className="relative">
               <select
                 required
-                className={`${inputClasses} appearance-none cursor-pointer uppercase text-xs tracking-widest text-[var(--text-h)] pr-12`}
+                className={`${inputClasses} appearance-none cursor-pointer uppercase text-[10px] tracking-widest text-[var(--text-h)] pr-12`}
                 value={formData.category}
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
@@ -159,18 +169,14 @@ const AddTransactionModal: React.FC<Props> = ({
                     <option
                       key={cat}
                       value={cat}
-                      className="bg-[var(--surface)] text-[var(--text-h)]"
+                      className="bg-[#1a1a1a] text-white"
                     >
                       {cat.toUpperCase()}
                     </option>
                   ))
                 ) : (
-                  <option
-                    disabled
-                    value=""
-                    className="bg-[var(--surface)] text-[var(--text)] opacity-50"
-                  >
-                    NO SEGMENTS FOUND
+                  <option disabled value="">
+                    NO BUCKETS INITIALIZED
                   </option>
                 )}
               </select>
@@ -182,10 +188,10 @@ const AddTransactionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Timestamp & Metadata */}
+          {/* Timestamp & Notes */}
           <div className="grid grid-cols-1 gap-6">
             <div className="space-y-3">
-              <label className="text-[12px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.25em] px-1">
+              <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
                 Timestamp
               </label>
               <input
@@ -198,11 +204,11 @@ const AddTransactionModal: React.FC<Props> = ({
               />
             </div>
             <div className="space-y-3">
-              <label className="text-[12px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.25em] px-1">
-                Description
+              <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
+                Note
               </label>
               <textarea
-                placeholder="Notes..."
+                placeholder="Entry description..."
                 className={`${inputClasses} h-24 resize-none font-medium text-sm`}
                 value={formData.note}
                 onChange={(e) =>
@@ -212,13 +218,13 @@ const AddTransactionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             disabled={loading || availableCategories.length === 0}
             type="submit"
-            className="w-full bg-flow-accent text-white font-black py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-flow-accent/20 disabled:opacity-30 uppercase text-xs tracking-[0.2em]"
+            className="w-full bg-flow-accent text-white font-black py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-flow-accent/20 disabled:opacity-30 uppercase text-[10px] tracking-[0.25em]"
           >
-            {loading ? "Creating Transaction..." : "Create Transaction"}
+            {loading ? "Initializing..." : "Create Entry"}
           </button>
         </form>
       </div>
