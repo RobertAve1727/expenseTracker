@@ -26,15 +26,22 @@ const AddCategoryModal: React.FC<Props> = ({
     e.preventDefault();
     setLoading(true);
 
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const userId = user.id || "L4QIW7RbHQM";
+    // FIX: Changed from localStorage to sessionStorage and removed hardcoded ID fallback
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const userId = user.id;
+
+    if (!userId) {
+      console.error("Auth Error: No user ID found in session");
+      setLoading(false);
+      return;
+    }
 
     try {
-      // 1. Create the Category Definition
+      // 1. Create the Category Definition using the dynamic userId from session
       await fetch(`http://localhost:5000/categories`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, ...formData }),
+        body: JSON.stringify({ ...formData, userId }),
       });
 
       // 2. Sync with Budget (Upsert logic)

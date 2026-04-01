@@ -5,17 +5,44 @@
       "email": "robert@gmail.com",
       "password": "123",
       "id": "3w6c3jR3Mac"
+    },
+    {
+      "name": "Quiela",
+      "email": "quiela@gmail.com",
+      "password": "123",
+      "id": "WRI3EfR1_zE"
     }
   ],
-  "transactions": [],
+  "transactions": [
+    {
+      "id": "4hbOvU-giRI",
+      "userId": "3w6c3jR3Mac",
+      "type": "expense",
+      "date": "April 1, 2026",
+      "amount": "1532",
+      "status": "Completed",
+      "note": "asdf",
+      "category": "Collectibles"
+    }
+  ],
   "budgets": [
     {
       "userId": "3w6c3jR3Mac",
       "masterBudget": 450,
       "categoryLimits": {
-        "Collectibles": 0
+        "Collectibles": 0,
+        "Transport": 0,
+        "Fuel": 0
       },
       "id": "9zDtx-KpSj8"
+    },
+    {
+      "userId": "WRI3EfR1_zE",
+      "masterBudget": 0,
+      "categoryLimits": {
+        "Makeup Kits": 0
+      },
+      "id": "2m8AN0M1GAs"
     }
   ],
   "categories": [
@@ -25,6 +52,20 @@
       "icon": "ShoppingBag",
       "color": "bg-indigo-500",
       "id": "Ao8rUcx6R90"
+    },
+    {
+      "name": "Makeup Kits",
+      "icon": "ShoppingBag",
+      "color": "bg-indigo-500",
+      "userId": "WRI3EfR1_zE",
+      "id": "WPKz7QgFgVM"
+    },
+    {
+      "name": "Fuel",
+      "icon": "ShoppingBag",
+      "color": "bg-indigo-500",
+      "userId": "3w6c3jR3Mac",
+      "id": "j6CT9yPrSwU"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
