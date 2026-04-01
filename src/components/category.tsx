@@ -22,7 +22,6 @@ const Categories = () => {
     null,
   );
   const [isDeleting, setIsDeleting] = useState(false);
-
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -33,7 +32,6 @@ const Categories = () => {
   const fetchData = async () => {
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     const userId = user.id;
-
     if (!userId) return;
 
     try {
@@ -59,7 +57,6 @@ const Categories = () => {
     setIsDeleting(true);
 
     try {
-      // 1. RE-MAP TRANSACTIONS TO "UNCATEGORIZED"
       const linkedTransactions = transactions.filter(
         (t) => t.category === categoryToDelete.name,
       );
@@ -76,7 +73,6 @@ const Categories = () => {
         );
       }
 
-      // 2. CLEAN UP BUDGET LIMITS
       if (budgetData) {
         const updatedLimits = { ...budgetData.categoryLimits };
         delete updatedLimits[categoryToDelete.name];
@@ -87,7 +83,6 @@ const Categories = () => {
         });
       }
 
-      // 3. DELETE THE CATEGORY
       await fetch(`http://localhost:5000/categories/${categoryToDelete.id}`, {
         method: "DELETE",
       });
@@ -97,7 +92,7 @@ const Categories = () => {
       setActiveMenu(null);
       await fetchData();
     } catch (e) {
-      console.error("Deletion/Migration failed:", e);
+      console.error("Deletion failed:", e);
     } finally {
       setIsDeleting(false);
     }
@@ -108,14 +103,14 @@ const Categories = () => {
   }, []);
 
   const getIcon = (name: string) => {
-    if (name === "Uncategorized") return <HelpCircle size={20} />;
+    if (name === "Uncategorized") return <HelpCircle size={22} />;
     const Icon = (LucideIcons as any)[name] || Tag;
-    return <Icon size={20} />;
+    return <Icon size={22} />;
   };
 
   if (loading)
     return (
-      <div className="p-10 text-center dark:text-white font-black uppercase tracking-widest">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--bg)] text-[var(--text-h)] font-black uppercase tracking-[0.3em] animate-pulse">
         Syncing Buckets...
       </div>
     );
@@ -125,45 +120,58 @@ const Categories = () => {
   );
 
   return (
-    <div className="p-6 lg:p-10 bg-slate-50 dark:bg-[#0f1115] min-h-screen transition-colors duration-300">
+    <div className="p-6 lg:p-12 bg-[var(--bg)] min-h-screen transition-all duration-500">
       <div className="max-w-7xl mx-auto">
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        {/* Header Section */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
           <div>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
+            <h1 className="text-5xl font-black text-[var(--text-h)] tracking-tighter">
               Categories
             </h1>
-            <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mt-1">
-              Manage Spending Buckets
+            <p className="text-[var(--text)] text-xs font-black uppercase tracking-[0.2em] mt-2 opacity-50">
+              Manage Spending Segments
             </p>
           </div>
-          <div className="flex gap-2 bg-white dark:bg-[#1a1d23] p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <button
-              onClick={() => setViewType("grid")}
-              className={`p-2 rounded-xl transition-all ${viewType === "grid" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-400"}`}
-            >
-              <LayoutGrid size={20} />
-            </button>
-            <button
-              onClick={() => setViewType("list")}
-              className={`p-2 rounded-xl transition-all ${viewType === "list" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-400"}`}
-            >
-              <List size={20} />
-            </button>
+
+          <div className="flex gap-2 bg-[var(--surface)] p-1.5 rounded-2xl border border-[var(--border)] shadow-xl backdrop-blur-md">
+            {(["grid", "list"] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => setViewType(type)}
+                className={`p-3 rounded-xl transition-all duration-300 ${
+                  viewType === type
+                    ? "bg-flow-accent text-white shadow-lg shadow-flow-accent/20"
+                    : "text-[var(--text)] opacity-40 hover:opacity-100"
+                }`}
+              >
+                {type === "grid" ? (
+                  <LayoutGrid size={20} />
+                ) : (
+                  <List size={20} />
+                )}
+              </button>
+            ))}
           </div>
         </header>
 
-        <div className="relative mb-8 group">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 w-5 h-5 transition-colors" />
+        {/* Search Bar */}
+        <div className="relative mb-12 group">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-flow-accent group-focus-within:scale-110 transition-transform w-5 h-5" />
           <input
             placeholder="Search categories..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-14 pr-6 py-5 bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 rounded-[2rem] outline-none font-bold dark:text-white focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm"
+            className="w-full pl-16 pr-8 py-6 bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] outline-none font-black text-xs tracking-widest text-[var(--text-h)] focus:border-flow-accent/50 transition-all shadow-2xl backdrop-blur-xl placeholder:opacity-30"
           />
         </div>
 
+        {/* Categories Grid */}
         <div
-          className={`grid gap-6 ${viewType === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}
+          className={`grid gap-8 ${
+            viewType === "grid"
+              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              : "grid-cols-1"
+          }`}
         >
           {filtered.map((cat) => {
             const limit = budgetData?.categoryLimits[cat.name] || 0;
@@ -185,11 +193,11 @@ const Categories = () => {
             return (
               <div
                 key={cat.id}
-                className="relative bg-white dark:bg-[#1a1d23] p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-none group transition-all hover:translate-y-[-4px]"
+                className="relative bg-[var(--surface)] p-8 rounded-[3.5rem] border border-[var(--border)] shadow-2xl group transition-all duration-500 hover:translate-y-[-8px] hover:border-flow-accent/30 backdrop-blur-lg"
               >
                 <div className="flex justify-between items-start mb-8">
                   <div
-                    className={`p-4 rounded-2xl ${cat.color} bg-opacity-10 ${cat.color.replace("bg-", "text-")} transition-transform group-hover:scale-110`}
+                    className={`p-5 rounded-[2rem] ${cat.color} bg-opacity-20 ${cat.color.replace("bg-", "text-")} transition-all duration-500 group-hover:rotate-12 border border-white/5`}
                   >
                     {getIcon(cat.icon)}
                   </div>
@@ -199,18 +207,19 @@ const Categories = () => {
                       onClick={() =>
                         setActiveMenu(activeMenu === cat.id ? null : cat.id)
                       }
-                      className="text-slate-300 hover:text-indigo-500 p-1 transition-colors"
+                      className="text-[var(--text)] opacity-30 hover:opacity-100 p-2 transition-all"
                     >
-                      <MoreVertical size={20} />
+                      <MoreVertical size={22} />
                     </button>
+
                     {activeMenu === cat.id && (
-                      <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-[#252a33] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                      <div className="absolute right-0 mt-3 w-40 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl z-30 overflow-hidden backdrop-blur-2xl animate-in fade-in zoom-in-95">
                         <button
                           onClick={() => {
                             setCategoryToDelete(cat);
                             setIsDeleteModalOpen(true);
                           }}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-[10px] font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors uppercase tracking-widest"
+                          className="w-full flex items-center gap-3 px-5 py-4 text-[10px] font-black text-rose-500 hover:bg-rose-500/10 transition-colors uppercase tracking-widest"
                         >
                           <Trash2 size={14} /> Delete
                         </button>
@@ -219,49 +228,64 @@ const Categories = () => {
                   </div>
                 </div>
 
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-1 tracking-tight">
+                <h3 className="text-2xl font-black text-[var(--text-h)] mb-2 tracking-tighter">
                   {cat.name}
                 </h3>
 
-                <div className="flex justify-between items-end mb-4 text-sm font-bold">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-widest">
-                    Monthly Budget
+                <div className="flex justify-between items-end mb-4">
+                  <span className="text-[9px] font-black text-[var(--text)] uppercase tracking-widest opacity-40">
+                    Segment Flow
                   </span>
-                  <span className="dark:text-slate-300 text-xs">
+                  <span className="text-[var(--text-h)] text-xs font-black tracking-tight">
                     ₱{spent.toLocaleString()}{" "}
-                    <span className="text-slate-500">
+                    <span className="opacity-30">
                       / ₱{limit.toLocaleString()}
                     </span>
                   </span>
                 </div>
 
-                <div className="h-3 w-full bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden mb-3">
+                {/* Custom Progress Bar */}
+                <div className="h-4 w-full bg-black/20 rounded-full overflow-hidden mb-4 border border-[var(--border)]">
                   <div
-                    className={`h-full transition-all duration-1000 ${isNearLimit ? "bg-rose-500" : "bg-indigo-500"}`}
+                    className={`h-full transition-all duration-[1500ms] ease-out shadow-lg ${
+                      isNearLimit
+                        ? "bg-rose-500 shadow-rose-500/40"
+                        : "bg-flow-accent shadow-flow-accent/40"
+                    }`}
                     style={{ width: `${percent}%` }}
                   />
                 </div>
 
-                <p
-                  className={`text-[10px] font-black uppercase tracking-widest ${isNearLimit ? "text-rose-500 animate-pulse" : "text-slate-400"}`}
-                >
-                  {isNearLimit
-                    ? "⚠️ Near Limit"
-                    : `${Math.round(percent)}% used`}
-                </p>
+                <div className="flex justify-between items-center">
+                  <p
+                    className={`text-[10px] font-black uppercase tracking-[0.15em] ${
+                      isNearLimit
+                        ? "text-rose-500 animate-pulse"
+                        : "text-[var(--text)] opacity-40"
+                    }`}
+                  >
+                    {isNearLimit
+                      ? "LIMIT BREACH"
+                      : `${Math.round(percent)}% UTILIZED`}
+                  </p>
+                  {isNearLimit && (
+                    <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                  )}
+                </div>
               </div>
             );
           })}
 
+          {/* Create New Category Button */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex flex-col items-center justify-center p-8 rounded-[3rem] border-4 border-dashed border-slate-200 dark:border-slate-800 text-slate-400 hover:text-indigo-500 hover:border-indigo-500/50 transition-all min-h-[250px] group"
+            className="flex flex-col items-center justify-center p-10 rounded-[3.5rem] border-4 border-dashed border-[var(--border)] text-[var(--text)] opacity-30 hover:opacity-100 hover:border-flow-accent/50 hover:text-flow-accent transition-all duration-500 min-h-[300px] group bg-white/5 shadow-inner"
           >
-            <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-              <Plus size={32} />
+            <div className="p-6 rounded-full bg-white/5 mb-6 group-hover:bg-flow-accent group-hover:text-white group-hover:scale-110 transition-all duration-500 shadow-xl">
+              <Plus size={40} strokeWidth={3} />
             </div>
-            <span className="font-black uppercase text-xs tracking-widest">
-              Create New
+            <span className="font-black uppercase text-[11px] tracking-[0.3em]">
+              Create new Category
             </span>
           </button>
         </div>

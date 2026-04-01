@@ -15,9 +15,9 @@ const AddCategoryModal: React.FC<Props> = ({
   const [loading, setLoading] = useState(false);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [formData, setFormData] = useState({
-    name: "Shopping",
+    name: "SHOPPING",
     icon: "ShoppingBag",
-    color: "bg-indigo-500",
+    color: "bg-flow-accent",
   });
 
   if (!isOpen) return null;
@@ -25,56 +25,24 @@ const AddCategoryModal: React.FC<Props> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // FIX: Changed from localStorage to sessionStorage and removed hardcoded ID fallback
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     const userId = user.id;
 
     if (!userId) {
-      console.error("Auth Error: No user ID found in session");
       setLoading(false);
       return;
     }
 
     try {
-      // 1. Create the Category Definition using the dynamic userId from session
       await fetch(`http://localhost:5000/categories`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, userId }),
       });
-
-      // 2. Sync with Budget (Upsert logic)
-      const budgetRes = await fetch(
-        `http://localhost:5000/budgets?userId=${userId}`,
-      );
-      const budgets = await budgetRes.json();
-
-      if (budgets.length > 0) {
-        const myBudget = budgets[0];
-        await fetch(`http://localhost:5000/budgets/${myBudget.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            categoryLimits: { ...myBudget.categoryLimits, [formData.name]: 0 },
-          }),
-        });
-      } else {
-        await fetch(`http://localhost:5000/budgets`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId,
-            masterBudget: 0,
-            categoryLimits: { [formData.name]: 0 },
-          }),
-        });
-      }
-
       await onCategoryCreated();
       onClose();
     } catch (error) {
-      console.error("Failed to save category:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -88,93 +56,112 @@ const AddCategoryModal: React.FC<Props> = ({
     { name: "Zap", icon: <Zap /> },
   ];
 
+  // MATCHED: High-contrast white background for inputs as seen in image_b7f38c.png
+  const inputClasses =
+    "w-full bg-white border border-slate-200 rounded-[1.5rem] py-6 px-6 text-black outline-none focus:border-flow-accent/50 font-black transition-all shadow-sm uppercase tracking-widest text-sm";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-[#1a1d23] border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl">
-        <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            New Segment
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-all">
+      {/* MODAL BODY: Lighter grey glassmorphism matching your screenshot */}
+      <div className="bg-[#b3b3b3]/90 border border-white/20 w-full max-w-md rounded-[3.5rem] overflow-hidden shadow-2xl backdrop-blur-2xl animate-in zoom-in-95 duration-200">
+        {/* Header */}
+        <div className="flex justify-between items-center p-10 pb-6">
+          <h2 className="text-3xl font-black text-[#1a1a1a] tracking-tighter">
+            New Bucket
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            className="p-2 rounded-xl text-slate-500 hover:text-black transition-all"
           >
-            <X size={20} />
+            <X size={24} strokeWidth={3} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-7 space-y-6">
-          <div className="space-y-1.5">
-            <div className="flex justify-between items-center px-1">
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                Identify
+        <form onSubmit={handleSubmit} className="p-10 pt-4 space-y-10">
+          {/* Identity Section */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center px-2">
+              <label className="text-[11px] font-black uppercase text-slate-500 tracking-[0.2em]">
+                Identity
               </label>
               <button
                 type="button"
                 onClick={() => setIsCustomCategory(!isCustomCategory)}
-                className="text-[10px] font-black text-indigo-500 uppercase"
+                className="text-[10px] font-black text-[#00d1c1] hover:brightness-90 uppercase tracking-widest"
               >
-                {isCustomCategory ? "List" : "Unique"}
+                {isCustomCategory ? "Use List" : "Create Unique"}
               </button>
             </div>
+
             {isCustomCategory ? (
               <input
                 autoFocus
                 required
-                placeholder="Name..."
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-indigo-500/30 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none font-medium"
+                placeholder="Ex: Gaming..."
+                className={inputClasses}
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
               />
             ) : (
-              <select
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-slate-900 dark:text-white outline-none appearance-none font-medium"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              >
-                {[
-                  "Food",
-                  "Transport",
-                  "Bills",
-                  "Shopping",
-                  "Entertainment",
-                ].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  className={`${inputClasses} appearance-none cursor-pointer`}
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                >
+                  {[
+                    "Food",
+                    "Transport",
+                    "Bills",
+                    "Shopping",
+                    "Entertainment",
+                  ].map((n) => (
+                    <option key={n} value={n}>
+                      {n.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-1">
+          {/* Visual Marker (Icons) */}
+          <div className="space-y-4">
+            <label className="text-[11px] font-black uppercase text-slate-500 tracking-[0.2em] px-2">
               Visual Marker
             </label>
-            <div className="grid grid-cols-5 gap-3 pt-2">
+            <div className="grid grid-cols-5 gap-3">
               {icons.map((item) => (
                 <button
                   key={item.name}
                   type="button"
                   onClick={() => setFormData({ ...formData, icon: item.name })}
-                  className={`p-4 rounded-xl flex items-center justify-center border-2 transition-all ${formData.icon === item.name ? "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 text-indigo-600 shadow-md" : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"}`}
+                  className={`aspect-square rounded-[1.2rem] flex items-center justify-center border-2 transition-all duration-300 ${
+                    formData.icon === item.name
+                      ? "bg-[#00d1c1]/10 border-[#00d1c1] text-[#00d1c1]"
+                      : "bg-white/50 border-white/40 text-slate-400 hover:border-slate-300"
+                  }`}
                 >
-                  {React.cloneElement(item.icon, { size: 20 })}
+                  {React.cloneElement(item.icon, {
+                    size: 24,
+                    strokeWidth: 2.5,
+                  })}
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Submit Button */}
           <button
             disabled={loading}
             type="submit"
-            className="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-indigo-500/20 disabled:opacity-50 transition-transform active:scale-95"
+            className="w-full bg-[#00d1c1] hover:brightness-105 text-white font-black py-6 rounded-[1.5rem] transition-all active:scale-[0.98] shadow-xl shadow-[#00d1c1]/20 disabled:opacity-30 uppercase text-sm tracking-[0.15em]"
           >
-            {loading ? "Syncing..." : "Initialize Segment"}
+            {loading ? "Initializing..." : "Initialize Segment"}
           </button>
         </form>
       </div>
