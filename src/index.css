@@ -1,57 +1,112 @@
-@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&family=Caveat:wght@400;700&display=swap");
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
 
-/* --- GLOBAL SCROLLBAR KILLER --- */
+/* --- GLOBAL LAYOUT --- */
+/* --- THE GLOBAL MESH STAGE --- */
 html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  width: 100%;
-  overflow: hidden; /* This removes the outer white scrollbar */
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--mesh-bg);
+  color: var(--text);
+  /* The Mesh implementation */
+  background-image:
+    radial-gradient(at 0% 0%, var(--mesh-color-1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, var(--mesh-color-2) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, var(--mesh-color-3) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, var(--mesh-color-1) 0px, transparent 50%);
+  background-attachment: fixed;
+  transition: background 0.5s ease;
 }
 
 @theme {
-  --color-brand-primary: #3b82f6;
+  /* Flowhub Colors */
+  --color-flow-accent: #4fd1c7;
+  --color-flow-button: #1f2937;
+  --color-flow-peach: #fed7aa;
+  --color-flow-mint: #a7f3d0;
+  --color-flow-yellow: #fef3c7;
+
+  /* Your existing functional colors */
   --color-income: #22c55e;
   --color-expense: #ef4444;
   --font-sans: "Rubik", ui-sans-serif, system-ui;
+  --font-handwritten: "Caveat", cursive;
 }
 
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #ffffff;
-  --border: #e5e4e7;
-  --sans: "Rubik", ui-sans-serif, system-ui, sans-serif;
+  /* Mesh Gradient Colors - Light Mode */
+  --mesh-bg: #f5f7fa;
+  --mesh-color-1: rgba(79, 209, 199, 0.15); /* Flow Teal */
+  --mesh-color-2: rgba(254, 215, 170, 0.1); /* Flow Peach */
+  --mesh-color-3: rgba(167, 243, 208, 0.1); /* Flow Mint */
 
-  font: 18px/145% var(--sans);
-  background: var(--bg);
-  color: var(--text);
-  transition: background-color 0.3s ease;
+  --text: #6b7280;
+  --text-h: #1a1a1a;
+  --border: #e5e7eb;
+  --surface: rgba(255, 255, 255, 0.7); /* Translucent for glass effect */
+
+  font:
+    18px/145% "Rubik",
+    sans-serif;
 }
 
 .dark {
-  --text: #9ca3af;
-  --text-h: #f3f4f6;
-  --bg: #0f1115;
-  --border: #1e293b;
-}
+  /* Mesh Gradient Colors - Dark Mode */
+  --mesh-bg: #0b0e14;
+  --mesh-color-1: rgba(79, 209, 199, 0.08);
+  --mesh-color-2: rgba(99, 102, 241, 0.05); /* Indigo tint */
+  --mesh-color-3: rgba(15, 17, 21, 1);
 
-/* --- NEW: PURE TYPING INPUTS (NO ARROWS) --- */
+  --text: #9ca3af;
+  --text-h: #ecf0f3;
+  --border: #30363d;
+  --surface: rgba(22, 27, 34, 0.6);
+}
+/* --- UTILITIES --- */
 @layer base {
-  /* Chrome, Safari, Edge, Opera */
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
 
-  /* Firefox */
   input[type="number"] {
     -moz-appearance: textfield;
     appearance: textfield;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--text-h);
+    font-weight: 700;
+  }
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+.auth-shell main,
+.auth-shell aside {
+  animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }

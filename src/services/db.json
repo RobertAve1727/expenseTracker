@@ -13,18 +13,7 @@
       "id": "WRI3EfR1_zE"
     }
   ],
-  "transactions": [
-    {
-      "id": "4hbOvU-giRI",
-      "userId": "3w6c3jR3Mac",
-      "type": "expense",
-      "date": "April 1, 2026",
-      "amount": "1532",
-      "status": "Completed",
-      "note": "asdf",
-      "category": "Collectibles"
-    }
-  ],
+  "transactions": [],
   "budgets": [
     {
       "userId": "3w6c3jR3Mac",

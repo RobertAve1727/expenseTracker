@@ -6,18 +6,17 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
-import Login from "./components/login";
-import Register from "./components/register";
+import AuthWrapper from "./components/authWrapper"; // New consolidated component
 import Dashboard from "./components/dashboard";
 import TransactionPage from "./components/transaction";
 import SettingsPage from "./components/settings";
 import BudgetLimit from "./features/budgetLimit";
 import CategoryPage from "./components/category";
-import SmartInsights from "./features/smartInsights"; // Replaced Reports with SmartInsights
+import SmartInsights from "./features/smartInsights";
 import Sidebar from "./components/sidebar";
 import "./App.css";
 
-// SWITCHED TO sessionStorage: This clears when the tab/window is closed
+// Check if user session exists
 const isAuthenticated = () => {
   const user = sessionStorage.getItem("user");
   return user !== null && user !== "undefined";
@@ -29,16 +28,17 @@ const ProtectedRoute = () => {
 
 const AppLayout = () => {
   return (
-    <div className="flex bg-white dark:bg-[#0f1115] h-screen overflow-hidden transition-colors duration-300">
+    <div className="flex bg-transparent h-screen overflow-hidden transition-colors duration-300">
       <Sidebar />
       <main
         className="flex-1 h-screen overflow-y-auto 
+        bg-white/30 dark:bg-black/10 backdrop-blur-[2px]
         [&::-webkit-scrollbar]:w-2
         [&::-webkit-scrollbar-track]:bg-transparent
-        [&::-webkit-scrollbar-thumb]:bg-slate-200
-        dark:[&::-webkit-scrollbar-thumb]:bg-slate-800/60
+        [&::-webkit-scrollbar-thumb]:bg-slate-200/50
+        dark:[&::-webkit-scrollbar-thumb]:bg-slate-800/40
         [&::-webkit-scrollbar-thumb]:rounded-full
-        hover:[&::-webkit-scrollbar-thumb]:bg-indigo-500/40
+        hover:[&::-webkit-scrollbar-thumb]:bg-flow-accent/40
         transition-all"
       >
         <Outlet />
@@ -51,8 +51,7 @@ function App() {
   const [isAuth, setIsAuth] = useState(isAuthenticated());
 
   useEffect(() => {
-    // Theme stays in localStorage because we want the theme to persist
-    // even if the user has to log back in.
+    // Sync Theme
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
       document.documentElement.classList.add("dark");
@@ -60,9 +59,8 @@ function App() {
       document.documentElement.classList.remove("dark");
     }
 
+    // Sync Auth State across the app
     const checkAuth = () => setIsAuth(isAuthenticated());
-
-    // We listen for the custom event to update the UI state
     window.addEventListener("auth-change", checkAuth);
 
     return () => {
@@ -73,31 +71,34 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Both Login and Register now use AuthWrapper for the sliding effect */}
         <Route
           path="/login"
-          element={isAuth ? <Navigate to="/dashboard" replace /> : <Login />}
+          element={
+            isAuth ? <Navigate to="/dashboard" replace /> : <AuthWrapper />
+          }
         />
         <Route
           path="/register"
-          element={isAuth ? <Navigate to="/dashboard" replace /> : <Register />}
+          element={
+            isAuth ? <Navigate to="/dashboard" replace /> : <AuthWrapper />
+          }
         />
 
+        {/* Protected Dashboard Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<TransactionPage />} />
             <Route path="/categories" element={<CategoryPage />} />
             <Route path="/budget" element={<BudgetLimit />} />
-
-            {/* FIXED ROUTING HERE */}
             <Route path="/insights" element={<SmartInsights />} />
-
             <Route path="/settings" element={<SettingsPage />} />
 
             <Route
               path="/alerts"
               element={
-                <div className="p-10 dark:text-white font-black uppercase tracking-widest">
+                <div className="p-10 text-[var(--text-h)] font-black uppercase tracking-widest opacity-40">
                   Alerts Coming Soon
                 </div>
               }
@@ -105,7 +106,7 @@ function App() {
             <Route
               path="/support"
               element={
-                <div className="p-10 dark:text-white font-black uppercase tracking-widest">
+                <div className="p-10 text-[var(--text-h)] font-black uppercase tracking-widest opacity-40">
                   Support Coming Soon
                 </div>
               }
@@ -114,6 +115,7 @@ function App() {
           </Route>
         </Route>
 
+        {/* Global Redirects */}
         <Route
           path="/"
           element={
