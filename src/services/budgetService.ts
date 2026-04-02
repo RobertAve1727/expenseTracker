@@ -1,14 +1,18 @@
+import { supabase } from "./supabaseClient";
 import type { Budget } from "./index";
-
-const API_URL = "http://localhost:5000/budgets";
 
 export const BudgetService = {
   // Fetch budget for a specific user
-  getBudgetByUserId: async (userId: string): Promise<Budget | null> => {
+  getBudgetByUserId: async (userId: string): Promise<any | null> => {
     try {
-      const response = await fetch(`${API_URL}?userId=${userId}`);
-      const data = await response.json();
-      return data.length > 0 ? data[0] : null;
+      const { data, error } = await supabase
+        .from("budgets")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error("Error fetching budget:", error);
       return null;
@@ -18,29 +22,27 @@ export const BudgetService = {
   // Save or Update budget
   saveBudget: async (
     userId: string,
-    budgetData: Omit<Budget, "userId" | "id">,
+    budgetData: {
+      masterBudget: number;
+      categoryLimits: Record<string, number>;
+    },
   ) => {
-    const existing = await BudgetService.getBudgetByUserId(userId);
+    try {
+      // Mapping camelCase from UI to snake_case for Supabase
+      const { data, error } = await supabase.from("budgets").upsert(
+        {
+          user_id: userId,
+          master_budget: budgetData.masterBudget,
+          category_limits: budgetData.categoryLimits,
+        },
+        { onConflict: "user_id" },
+      );
 
-    const payload = {
-      userId,
-      ...budgetData,
-    };
-
-    if (existing && existing.id) {
-      // Update existing
-      return fetch(`${API_URL}/${existing.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      // Create new
-      return fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error saving budget:", error);
+      throw error;
     }
   },
 };

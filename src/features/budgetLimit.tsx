@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   CheckCircle2,
   AlertTriangle,
@@ -6,10 +6,11 @@ import {
   Save,
   X,
   Loader2,
-} from "lucide-react"; // Added Loader2 for a nicer sync icon
+} from "lucide-react";
 import { useAuth } from "../services/useAuth";
 import { TransactionService } from "../services/transactionService";
 import { BudgetService } from "../services/budgetService";
+import { supabase } from "../services/supabaseClient";
 import type { Transaction } from "../services/index";
 
 const BudgetLimit = () => {
@@ -17,42 +18,46 @@ const BudgetLimit = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-
   const [masterBudget, setMasterBudget] = useState<number | "">(0);
-
-  // FIX: Initialize as an empty object to remove hard-coded categories
   const [limits, setLimits] = useState<Record<string, number | "">>({});
 
   const loadAllData = useCallback(async () => {
-    const currentUserId =
-      user?.id || JSON.parse(localStorage.getItem("user") || "{}")?.id;
-    if (!currentUserId) return;
+    // Priority: useAuth state, fallback to sessionStorage for reliability
+    const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const currentUserId = user?.id || sessionUser?.id;
+
+    if (!currentUserId) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const [transactionData, budgetEntry, categoryData] = await Promise.all([
-        TransactionService.getAllByUserId(currentUserId),
-        BudgetService.getBudgetByUserId(currentUserId),
-        fetch(`http://localhost:5000/categories?userId=${currentUserId}`).then(
-          (res) => res.json(),
-        ),
-      ]);
+      setIsLoading(true);
+      const [transactionData, budgetEntry, { data: categoryData }] =
+        await Promise.all([
+          TransactionService.getAllByUserId(currentUserId),
+          BudgetService.getBudgetByUserId(currentUserId),
+          supabase
+            .from("categories")
+            .select("name")
+            .eq("user_id", currentUserId),
+        ]);
 
       setTransactions(transactionData || []);
 
-      // If categories exist, we map them. Even if no budget exists yet,
-      // we show the categories with 0 limits so the user can set them.
       const mergedLimits: Record<string, number> = {};
-
       if (Array.isArray(categoryData)) {
         categoryData.forEach((cat: any) => {
-          // Priority: 1. Saved Budget Limit, 2. Default to 0
-          mergedLimits[cat.name] = budgetEntry?.categoryLimits?.[cat.name] || 0;
+          // Map from category_limits (snake_case) back to component state
+          mergedLimits[cat.name] =
+            (budgetEntry as any)?.category_limits?.[cat.name] || 0;
         });
       }
 
       setLimits(mergedLimits);
       if (budgetEntry) {
-        setMasterBudget(budgetEntry.masterBudget);
+        // Map from master_budget (snake_case) back to component state
+        setMasterBudget((budgetEntry as any).master_budget || 0);
       }
     } catch (err) {
       console.error("Load failed:", err);
@@ -66,15 +71,20 @@ const BudgetLimit = () => {
   }, [loadAllData]);
 
   const handleSave = async () => {
-    const currentUserId =
-      user?.id || JSON.parse(localStorage.getItem("user") || "{}")?.id;
+    const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const currentUserId = user?.id || sessionUser?.id;
+
     if (!currentUserId) return;
 
-    await BudgetService.saveBudget(currentUserId, {
-      masterBudget: Number(masterBudget) || 0,
-      categoryLimits: limits as any,
-    });
-    setIsEditing(false);
+    try {
+      await BudgetService.saveBudget(currentUserId, {
+        masterBudget: Number(masterBudget) || 0,
+        categoryLimits: limits as any,
+      });
+      setIsEditing(false);
+    } catch (err) {
+      alert("Failed to save budget settings. Check your Supabase columns.");
+    }
   };
 
   const handleNumberInput = (val: string) => (val === "" ? "" : Number(val));
@@ -106,7 +116,6 @@ const BudgetLimit = () => {
         spent: spentAmt,
         percent,
         isWarning: isOverLimit || isCloseToLimit,
-        statusColor: isOverLimit ? "text-rose-500" : "text-amber-400",
       };
     });
 
@@ -180,7 +189,7 @@ const BudgetLimit = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        {/* Master Card */}
+        {/* Master Budget Display */}
         <div className="lg:col-span-2 bg-[#16191e] p-10 rounded-[3.5rem] relative overflow-hidden flex flex-col justify-between min-h-[300px] border border-slate-800 shadow-2xl">
           <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-flow-accent/5 blur-[100px]" />
           <div className="relative z-10">
@@ -228,7 +237,7 @@ const BudgetLimit = () => {
           </div>
         </div>
 
-        {/* Global Utilization Card */}
+        {/* Utilization Card */}
         <div
           className={`bg-[var(--surface)] p-10 rounded-[3.5rem] border backdrop-blur-xl flex flex-col justify-between shadow-2xl transition-all duration-500 ${budgetData.isOverMaster ? "border-rose-500/30" : "border-[var(--border)]"}`}
         >
@@ -257,7 +266,7 @@ const BudgetLimit = () => {
             </div>
             <div className="w-full h-4 bg-black/20 rounded-full overflow-hidden p-1 border border-white/5">
               <div
-                className={`h-full rounded-full transition-all duration-1000 ease-out ${budgetData.isOverMaster ? "bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)]" : "bg-flow-accent shadow-[0_0_15px_rgba(0,209,193,0.4)]"}`}
+                className={`h-full rounded-full transition-all duration-1000 ease-out ${budgetData.isOverMaster ? "bg-rose-500" : "bg-flow-accent"}`}
                 style={{ width: `${budgetData.utilization}%` }}
               />
             </div>
@@ -265,7 +274,6 @@ const BudgetLimit = () => {
         </div>
       </div>
 
-      {/* Dynamic Segment Capsules */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {budgetData.cards.map((card) => (
           <div
@@ -320,15 +328,6 @@ const BudgetLimit = () => {
             </div>
           </div>
         ))}
-
-        {/* Placeholder if no categories exist */}
-        {budgetData.cards.length === 0 && !isLoading && (
-          <div className="col-span-full py-20 text-center border-2 border-dashed border-[var(--border)] rounded-[3rem] opacity-30">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em]">
-              No Segments Created
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
