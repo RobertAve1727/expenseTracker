@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { X, ChevronDown, Calendar, Hash, Notebook } from "lucide-react";
-import type { Transaction } from "../services";
+import { X, ChevronDown } from "lucide-react";
+import { supabase } from "../services/supabaseClient";
 import { TransactionService } from "../services/transactionService";
+import type { Transaction } from "../services";
 
 interface Props {
   isOpen: boolean;
@@ -26,20 +27,20 @@ const AddTransactionModal: React.FC<Props> = ({
     type: "expense",
   });
 
-  // SYNC: Fetching custom segments directly from the categories table
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:5000/categories?userId=${userId}`,
-        );
-        const data = await res.json();
+        const { data, error } = await supabase
+          .from("categories")
+          .select("name")
+          .eq("user_id", userId);
 
-        if (Array.isArray(data) && data.length > 0) {
+        if (error) throw error;
+
+        if (data && data.length > 0) {
           const categoryNames = data.map((cat: any) => cat.name);
           setAvailableCategories(categoryNames);
 
-          // Auto-select the first category if current selection is invalid or empty
           if (
             !formData.category ||
             !categoryNames.includes(formData.category)
@@ -48,9 +49,10 @@ const AddTransactionModal: React.FC<Props> = ({
           }
         } else {
           setAvailableCategories([]);
+          setFormData((prev) => ({ ...prev, category: "" }));
         }
       } catch (error) {
-        console.error("Stream Sync Error:", error);
+        console.error("Supabase Category Sync Error:", error);
       }
     };
 
@@ -61,14 +63,14 @@ const AddTransactionModal: React.FC<Props> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.category) return;
+    // BLOCKER: Prevent submission if no category is selected or available
+    if (!formData.category || availableCategories.length === 0) return;
 
     setLoading(true);
     try {
       const savedTx = await TransactionService.create(formData, userId);
       onAdd(savedTx);
 
-      // Reset form state for next entry
       setFormData({
         amount: "",
         category: availableCategories[0] || "",
@@ -87,6 +89,8 @@ const AddTransactionModal: React.FC<Props> = ({
   const inputClasses =
     "w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl py-4 px-5 text-[var(--text-h)] outline-none focus:border-flow-accent/50 font-bold transition-all backdrop-blur-md placeholder:opacity-20";
 
+  const hasNoCategories = availableCategories.length === 0;
+
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 transition-all text-left">
       <div className="bg-[var(--surface)] border border-[var(--border)] w-full max-w-md rounded-[3rem] overflow-hidden shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-200">
@@ -104,7 +108,7 @@ const AddTransactionModal: React.FC<Props> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          {/* Type Switcher */}
+          {/* Type Switcher - Always Taggable */}
           <div className="space-y-3">
             <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
               Flow Direction
@@ -127,7 +131,7 @@ const AddTransactionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Amount */}
+          {/* Amount - Always Taggable */}
           <div className="space-y-3">
             <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
               Value
@@ -150,7 +154,7 @@ const AddTransactionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Segment Dropdown - Purely Dynamic */}
+          {/* Segment Dropdown - Restricted if empty */}
           <div className="space-y-3">
             <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
               Active Segment
@@ -158,7 +162,7 @@ const AddTransactionModal: React.FC<Props> = ({
             <div className="relative">
               <select
                 required
-                className={`${inputClasses} appearance-none cursor-pointer uppercase text-[10px] tracking-widest text-[var(--text-h)] pr-12`}
+                className={`${inputClasses} appearance-none cursor-pointer uppercase text-[10px] tracking-widest text-[var(--text-h)] pr-12 ${hasNoCategories ? "border-rose-500/30" : ""}`}
                 value={formData.category}
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
@@ -166,29 +170,25 @@ const AddTransactionModal: React.FC<Props> = ({
               >
                 {availableCategories.length > 0 ? (
                   availableCategories.map((cat) => (
-                    <option
-                      key={cat}
-                      value={cat}
-                      className="bg-[#1a1a1a] text-white"
-                    >
+                    <option key={cat} value={cat} className="bg-[#1a1a1a]">
                       {cat.toUpperCase()}
                     </option>
                   ))
                 ) : (
-                  <option disabled value="">
-                    NO BUCKETS INITIALIZED
+                  <option value="" disabled>
+                    NO CATEGORIES FOUND
                   </option>
                 )}
               </select>
               <ChevronDown
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-flow-accent pointer-events-none"
+                className={`absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none ${hasNoCategories ? "text-rose-500" : "text-flow-accent"}`}
                 size={20}
                 strokeWidth={3}
               />
             </div>
           </div>
 
-          {/* Timestamp & Notes */}
+          {/* Timestamp & Notes - Always Taggable */}
           <div className="grid grid-cols-1 gap-6">
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase text-[var(--text)] opacity-50 tracking-[0.3em] px-1">
@@ -218,13 +218,17 @@ const AddTransactionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Submit */}
+          {/* Submit Button - The Main Gatekeeper */}
           <button
-            disabled={loading || availableCategories.length === 0}
+            disabled={loading || hasNoCategories}
             type="submit"
-            className="w-full bg-flow-accent text-white font-black py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-flow-accent/20 disabled:opacity-30 uppercase text-[10px] tracking-[0.25em]"
+            className="w-full bg-flow-accent text-white font-black py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-flow-accent/20 disabled:opacity-30 disabled:grayscale uppercase text-[10px] tracking-[0.25em]"
           >
-            {loading ? "Initializing..." : "Create Entry"}
+            {hasNoCategories
+              ? "Select a Category First"
+              : loading
+                ? "Initializing..."
+                : "Create Entry"}
           </button>
         </form>
       </div>

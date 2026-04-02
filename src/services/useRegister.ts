@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "./supabaseClient";
 
 export const useRegister = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -10,21 +11,39 @@ export const useRegister = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      // STEP 1: Create the user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
       });
 
-      if (response.ok) {
-        setIsSuccess(true);
-        return true;
-      } else {
-        setError("Failed to create account. Please try again.");
+      if (authError) {
+        setError(authError.message);
         return false;
       }
+
+      // STEP 2: If auth is successful, insert the name and email into your 'profiles' table
+      if (authData.user) {
+        const { error: profileError } = await supabase.from("profiles").insert([
+          {
+            id: authData.user.id, // Links the Profile to the Auth account
+            name: formData.fullName,
+            email: formData.email,
+          },
+        ]);
+
+        if (profileError) {
+          setError("Account created, but profile setup failed.");
+          return false;
+        }
+
+        setIsSuccess(true);
+        return true;
+      }
+
+      return false;
     } catch (err) {
-      setError("Database connection error.");
+      setError("An unexpected error occurred during registration.");
       return false;
     } finally {
       setIsLoading(false);

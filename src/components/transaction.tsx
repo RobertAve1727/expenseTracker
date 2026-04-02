@@ -16,6 +16,7 @@ import {
   Zap,
   Briefcase,
 } from "lucide-react";
+import { supabase } from "../services/supabaseClient";
 import type { Transaction } from "../services";
 import { TransactionService } from "../services/transactionService";
 import AddTransactionModal from "../features/addTransaction";
@@ -25,33 +26,45 @@ const TransactionPage: React.FC = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  // FIX: Initialized as empty. These will be populated from your DB categories.
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("All");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [txToDelete, setTxToDelete] = useState<string | null>(null);
+  const [userName, setUserName] = useState("User");
 
-  const currentUser = JSON.parse(sessionStorage.getItem("user") || "null");
-  const currentUserId = currentUser?.id;
+  // Get current session from Supabase
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/login");
+      } else {
+        setCurrentUserId(session.user.id);
+        // Try to get name from user_metadata or profiles table
+        setUserName(session.user.user_metadata?.fullName || "User");
+      }
+    };
+    getSession();
+  }, [navigate]);
 
   const loadData = async () => {
     if (!currentUserId) return;
     try {
-      // We fetch transactions and your custom categories simultaneously
-      const [txData, catRes] = await Promise.all([
+      // Fetch transactions via service and categories via supabase client
+      const [txData, { data: catData }] = await Promise.all([
         TransactionService.getAllByUserId(currentUserId),
-        fetch(`http://localhost:5000/categories?userId=${currentUserId}`),
+        supabase.from("categories").select("name").eq("user_id", currentUserId),
       ]);
 
       setTransactions(txData || []);
 
-      const categories = await catRes.json();
-      if (Array.isArray(categories)) {
-        // Extract the names of the custom buckets the user created
-        setAvailableCategories(categories.map((cat: any) => cat.name));
+      if (catData && Array.isArray(catData)) {
+        setAvailableCategories(catData.map((cat: any) => cat.name));
       }
     } catch (err) {
       console.error("Ledger sync error:", err);
@@ -59,12 +72,10 @@ const TransactionPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!currentUserId) {
-      navigate("/login");
-    } else {
+    if (currentUserId) {
       loadData();
     }
-  }, [currentUserId, navigate]);
+  }, [currentUserId]);
 
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch = (t.note || "")
@@ -75,9 +86,6 @@ const TransactionPage: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // FIX: Dynamic Icon Mapper
-  // Since categories are now custom strings, we map common keywords to icons
-  // and provide a default 'Tag' for unique user-defined names.
   const getIcon = (category: string) => {
     const iconSize = 14;
     const label = category.toUpperCase();
@@ -126,8 +134,8 @@ const TransactionPage: React.FC = () => {
               Transaction
             </h1>
             <p className="text-[var(--text)] text-xs mt-2 font-black uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
-              <Clock size={14} className="text-flow-accent" />{" "}
-              {currentUser?.name || "User"}'s Financial Stream
+              <Clock size={14} className="text-flow-accent" /> {userName}'s
+              Financial Stream
             </p>
           </div>
           <button
@@ -266,7 +274,7 @@ const TransactionPage: React.FC = () => {
           loadData();
         }}
         onAdd={(tx) => setTransactions([tx, ...transactions])}
-        userId={currentUserId}
+        userId={currentUserId || ""}
       />
 
       <DeleteConfirmModal
@@ -274,9 +282,13 @@ const TransactionPage: React.FC = () => {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={async () => {
           if (!txToDelete) return;
-          await TransactionService.delete(txToDelete);
-          setTransactions(transactions.filter((t) => t.id !== txToDelete));
-          setIsDeleteModalOpen(false);
+          try {
+            await TransactionService.delete(txToDelete);
+            setTransactions(transactions.filter((t) => t.id !== txToDelete));
+            setIsDeleteModalOpen(false);
+          } catch (error) {
+            console.error("Delete operation failed", error);
+          }
         }}
       />
     </div>

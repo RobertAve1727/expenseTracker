@@ -6,7 +6,7 @@ import { useRegister } from "../services/useRegister";
 const Register = ({ onToggle }: { onToggle: () => void }) => {
   const { registerUser, isLoading, error, isSuccess } = useRegister();
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
     password: "",
   });
@@ -66,11 +66,11 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
               <input
                 type="text"
                 required
-                value={formData.name}
+                value={formData.fullName}
                 onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
+                  setFormData({ ...formData, fullName: e.target.value })
                 }
-                placeholder="Your name"
+                placeholder="Your full name"
                 className="w-full pl-11 pr-4 h-[52px] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
               />
             </div>

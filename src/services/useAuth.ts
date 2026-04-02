@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { supabase } from "./supabaseClient"; // Your new client
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(() => {
-    // SWITCHED: Now checks sessionStorage on initial load
     const savedUser = sessionStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
@@ -14,36 +14,51 @@ export const useAuth = () => {
     setIsLoading(true);
     setError("");
     try {
-      // Fetching your local users array
-      const response = await fetch("http://localhost:5000/users");
-      const users = await response.json();
-
-      const foundUser = users.find(
-        (u: any) => u.email === email && u.password === password,
+      // SUPABASE SWAP: Using signInWithPassword instead of fetching users array
+      const { data, error: authError } = await supabase.auth.signInWithPassword(
+        {
+          email,
+          password,
+        },
       );
 
-      if (foundUser) {
-        setUser(foundUser);
-
-        // SWITCHED: Save to sessionStorage so it clears when tab closes
-        sessionStorage.setItem("user", JSON.stringify(foundUser));
-
-        return foundUser;
+      if (authError) {
+        setError(authError.message);
+        return null;
       }
 
-      setError("Invalid email or password.");
+      if (data?.user) {
+        // We fetch the 'profile' data to get the user's name
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", data.user.id)
+          .single();
+
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          name: profile?.name || "User", // Fallback if profile isn't created yet
+          ...profile,
+        };
+
+        setUser(userData);
+        sessionStorage.setItem("user", JSON.stringify(userData));
+        return userData;
+      }
+
       return null;
     } catch (err) {
-      setError("Server connection failed.");
+      setError("An unexpected error occurred.");
       return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    // SWITCHED: Clears sessionStorage
     sessionStorage.removeItem("user");
   };
 

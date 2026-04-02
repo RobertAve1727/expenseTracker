@@ -8,6 +8,7 @@ import {
   Utensils,
   Tag,
 } from "lucide-react";
+import { supabase } from "../services/supabaseClient";
 
 interface Props {
   isOpen: boolean;
@@ -22,7 +23,7 @@ const AddCategoryModal: React.FC<Props> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "", // Initialized as empty for user input
+    name: "",
     icon: "Tag",
     color: "bg-flow-accent",
   });
@@ -31,32 +32,43 @@ const AddCategoryModal: React.FC<Props> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    const cleanName = formData.name.trim().toUpperCase();
+    if (!cleanName) return;
 
     setLoading(true);
-    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-    const userId = user.id;
+
+    // Get current user from session
+    const userSession = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const userId = userSession.id;
 
     if (!userId) {
+      console.error("No active user session found");
       setLoading(false);
       return;
     }
 
     try {
-      await fetch(`http://localhost:5000/categories`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          name: formData.name.trim().toUpperCase(), // Ensure consistency
-          userId,
-        }),
-      });
+      // Supabase Insert logic
+      const { error } = await supabase.from("categories").insert([
+        {
+          name: cleanName,
+          icon: formData.icon,
+          color: formData.color,
+          user_id: userId,
+        },
+      ]);
+
+      if (error) throw error;
+
+      // Refresh the parent list
       await onCategoryCreated();
-      setFormData({ name: "", icon: "Tag", color: "bg-flow-accent" }); // Reset
+
+      // Reset and Close
+      setFormData({ name: "", icon: "Tag", color: "bg-flow-accent" });
       onClose();
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("Supabase Category Creation Error:", error.message);
+      alert(error.message || "Failed to initialize new bucket.");
     } finally {
       setLoading(false);
     }
@@ -72,7 +84,7 @@ const AddCategoryModal: React.FC<Props> = ({
   ];
 
   const inputClasses =
-    "w-full bg-white border border-slate-200 rounded-[1.5rem] py-6 px-6 text-black outline-none focus:border-[#00d1c1]/50 font-black transition-all shadow-sm uppercase tracking-widest text-sm placeholder:opacity-20";
+    "w-full bg-white border border-slate-200 rounded-[1.5rem] py-6 px-6 text-black outline-none focus:border-flow-accent/50 font-black transition-all shadow-sm uppercase tracking-widest text-sm placeholder:opacity-20";
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-all">
@@ -91,13 +103,13 @@ const AddCategoryModal: React.FC<Props> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-10 pt-4 space-y-10">
-          {/* Identity Section - Now strictly custom input */}
+          {/* Identity Section */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-2">
               <label className="text-[11px] font-black uppercase text-slate-500 tracking-[0.2em]">
                 Identity
               </label>
-              <span className="text-[10px] font-black text-[#00d1c1] uppercase tracking-widest">
+              <span className="text-[10px] font-black text-flow-accent uppercase tracking-widest">
                 Custom Name
               </span>
             </div>
@@ -105,6 +117,7 @@ const AddCategoryModal: React.FC<Props> = ({
             <input
               autoFocus
               required
+              disabled={loading}
               placeholder="E.G. GAMING, RENT, GIFTS..."
               className={inputClasses}
               value={formData.name}
@@ -124,10 +137,11 @@ const AddCategoryModal: React.FC<Props> = ({
                 <button
                   key={item.name}
                   type="button"
+                  disabled={loading}
                   onClick={() => setFormData({ ...formData, icon: item.name })}
                   className={`aspect-square rounded-[1rem] flex items-center justify-center border-2 transition-all duration-300 ${
                     formData.icon === item.name
-                      ? "bg-[#00d1c1]/10 border-[#00d1c1] text-[#00d1c1]"
+                      ? "bg-flow-accent/10 border-flow-accent text-flow-accent"
                       : "bg-white/50 border-white/40 text-slate-400 hover:border-slate-300"
                   }`}
                 >
@@ -144,7 +158,7 @@ const AddCategoryModal: React.FC<Props> = ({
           <button
             disabled={loading || !formData.name.trim()}
             type="submit"
-            className="w-full bg-[#00d1c1] hover:brightness-105 text-white font-black py-6 rounded-[1.5rem] transition-all active:scale-[0.98] shadow-xl shadow-[#00d1c1]/20 disabled:opacity-30 uppercase text-sm tracking-[0.15em]"
+            className="w-full bg-flow-accent hover:brightness-105 text-white font-black py-6 rounded-[1.5rem] transition-all active:scale-[0.98] shadow-xl shadow-flow-accent/20 disabled:opacity-30 uppercase text-sm tracking-[0.15em]"
           >
             {loading ? "Syncing..." : "Create Segment"}
           </button>
