@@ -58,29 +58,34 @@ const Categories = () => {
     setIsDeleting(true);
 
     try {
-      // 1. Update transactions using this category to "UNCATEGORIZED"
-      const { error: updateError } = await supabase
-        .from("transactions")
-        .update({ category: "UNCATEGORIZED" })
-        .eq("category", categoryToDelete.name)
-        .eq("user_id", categoryToDelete.userId);
+      // 1. Get the correct ID from session
+      const userSession = JSON.parse(sessionStorage.getItem("user") || "{}");
+      const userId = userSession.id;
 
-      if (updateError) throw updateError;
+      if (!userId) throw new Error("No user session found");
 
-      // 2. Delete the actual category
-      const { error: deleteError } = await supabase
+      // 2. Perform the Delete
+      // IMPORTANT: Make sure 'id' matches your Primary Key column name in Supabase
+      const { error, count } = await supabase
         .from("categories")
         .delete()
-        .eq("id", categoryToDelete.id);
+        .eq("id", categoryToDelete.id) // Ensure this matches the DB column name
+        .eq("user_id", userId); // Double-check: is it 'user_id' in DB?
 
-      if (deleteError) throw deleteError;
+      if (error) throw error;
 
+      // 3. Update Local State (Immediate UI feedback)
+      setCategories((prev) => prev.filter((c) => c.id !== categoryToDelete.id));
+
+      // 4. Cleanup UI
       setIsDeleteModalOpen(false);
       setCategoryToDelete(null);
       setActiveMenu(null);
-      await fetchData();
-    } catch (e) {
-      console.error("Deletion failed:", e);
+
+      console.log("Successfully deleted category. Rows affected:", count);
+    } catch (e: any) {
+      console.error("Deletion Error:", e.message);
+      alert(`Delete failed: ${e.message}`);
     } finally {
       setIsDeleting(false);
     }

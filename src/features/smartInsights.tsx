@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sparkles,
   TrendingUp,
@@ -9,25 +9,36 @@ import {
   Activity,
   ArrowUpRight,
 } from "lucide-react";
+import { TransactionService } from "../services/transactionService";
+import { BudgetService } from "../services/budgetService";
+import { useAuth } from "../services/useAuth";
 
 const SmartInsights = () => {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [budgetData, setBudgetData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-    const userId = user.id;
-    if (!userId) return;
+    // Priority: useAuth state, fallback to sessionStorage
+    const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const userId = user?.id || sessionUser?.id;
+
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     try {
+      setLoading(true);
+      // Use your existing services instead of localhost fetch
       const [transRes, budgetRes] = await Promise.all([
-        fetch(`http://localhost:5000/transactions?userId=${userId}`),
-        fetch(`http://localhost:5000/budgets?userId=${userId}`),
+        TransactionService.getAllByUserId(userId),
+        BudgetService.getBudgetByUserId(userId),
       ]);
-      setTransactions(await transRes.json());
-      const bData = await budgetRes.json();
-      setBudgetData(bData[0]);
+
+      setTransactions(transRes || []);
+      setBudgetData(budgetRes);
     } catch (e) {
       console.error("Analysis Error:", e);
     } finally {
@@ -37,7 +48,7 @@ const SmartInsights = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user?.id]);
 
   // --- ANALYSIS LOGIC ---
   const expenses = transactions.filter((t) => t.type === "expense");
@@ -50,13 +61,17 @@ const SmartInsights = () => {
   const currentDay = today.getDate() || 1;
 
   const totalSpent = expenses.reduce(
-    (s, t) => s + parseFloat(t.amount.toString().replace(/[^\d.-]/g, "")),
+    (s, t) =>
+      s + Math.abs(parseFloat(t.amount.toString().replace(/[^\d.-]/g, ""))),
     0,
   );
+
   const dailyAverage = totalSpent / currentDay;
   const projectedMonthly = dailyAverage * daysInMonth;
-  const totalLimit = budgetData?.totalLimit || 0;
-  const isOverBudget = projectedMonthly > totalLimit;
+
+  // Mapping Supabase 'master_budget' to local 'totalLimit'
+  const totalLimit = budgetData?.master_budget || 0;
+  const isOverBudget = totalLimit > 0 && projectedMonthly > totalLimit;
 
   const weekendSpending = expenses
     .filter((t) => {
@@ -64,9 +79,11 @@ const SmartInsights = () => {
       return day === 0 || day === 6;
     })
     .reduce(
-      (s, t) => s + parseFloat(t.amount.toString().replace(/[^\d.-]/g, "")),
+      (s, t) =>
+        s + Math.abs(parseFloat(t.amount.toString().replace(/[^\d.-]/g, ""))),
       0,
     );
+
   const weekendRatio = totalSpent > 0 ? weekendSpending / totalSpent : 0;
 
   const frequencyMap: Record<string, number> = {};
@@ -120,7 +137,12 @@ const SmartInsights = () => {
                   ₱{Math.round(dailyAverage).toLocaleString()}/day
                 </span>
                 , you will end the month{" "}
-                {isOverBudget ? (
+                {totalLimit === 0 ? (
+                  <span className="text-slate-500 italic">
+                    {" "}
+                    (No budget limit set)
+                  </span>
+                ) : isOverBudget ? (
                   <span className="text-rose-500 font-bold">
                     ₱
                     {Math.round(projectedMonthly - totalLimit).toLocaleString()}{" "}
@@ -150,7 +172,7 @@ const SmartInsights = () => {
               <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-white transition-all duration-1000 shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-                  style={{ width: "65%" }}
+                  style={{ width: "65%" }} // You could calculate this based on (dailyAverage / (totalLimit/30)) * 100
                 />
               </div>
             </div>
@@ -200,7 +222,7 @@ const SmartInsights = () => {
             <p className="text-[var(--text-h)] font-bold leading-snug">
               Cut{" "}
               <span className="underline decoration-rose-500/30">
-                {topHabit?.[0]}
+                {topHabit?.[0] || "this category"}
               </span>{" "}
               frequency by 15% next month to save approximately
               <span className="text-flow-accent ml-1">
