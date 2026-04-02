@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { supabase } from "./supabaseClient"; // Your new client
+import { useState, useEffect } from "react";
+import { supabase } from "./supabaseClient";
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(() => {
@@ -10,11 +10,57 @@ export const useAuth = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // 1. SYNC SESSION & LISTEN FOR CHANGES
+  // This ensures the Supabase Client is actually "Authenticated" even after a refresh
+  useEffect(() => {
+    const syncSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        // Optional: Re-fetch profile here if you want the latest data
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+
+        const userData = {
+          id: session.user.id,
+          email: session.user.email,
+          name: profile?.name || "User",
+          ...profile,
+        };
+
+        setUser(userData);
+        sessionStorage.setItem("user", JSON.stringify(userData));
+      } else {
+        // If Supabase says there is no session, clear our local state
+        setUser(null);
+        sessionStorage.removeItem("user");
+      }
+    };
+
+    syncSession();
+
+    // Listen for Auth events (Login, Logout, Token Refresh)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setUser(null);
+        sessionStorage.removeItem("user");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const verifyUser = async (email: string, password: string) => {
     setIsLoading(true);
     setError("");
     try {
-      // SUPABASE SWAP: Using signInWithPassword instead of fetching users array
       const { data, error: authError } = await supabase.auth.signInWithPassword(
         {
           email,
@@ -28,7 +74,6 @@ export const useAuth = () => {
       }
 
       if (data?.user) {
-        // We fetch the 'profile' data to get the user's name
         const { data: profile } = await supabase
           .from("profiles")
           .select("*")
@@ -38,7 +83,7 @@ export const useAuth = () => {
         const userData = {
           id: data.user.id,
           email: data.user.email,
-          name: profile?.name || "User", // Fallback if profile isn't created yet
+          name: profile?.name || "User",
           ...profile,
         };
 
@@ -46,7 +91,6 @@ export const useAuth = () => {
         sessionStorage.setItem("user", JSON.stringify(userData));
         return userData;
       }
-
       return null;
     } catch (err) {
       setError("An unexpected error occurred.");

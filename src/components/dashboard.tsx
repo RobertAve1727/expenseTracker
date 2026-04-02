@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../services/useAuth";
 import { TransactionService } from "../services/transactionService";
+import { supabase } from "../services/supabaseClient";
 import type { Transaction } from "../services";
 
 const Dashboard = () => {
@@ -27,62 +28,74 @@ const Dashboard = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgetLimits, setBudgetLimits] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
-      const currentUserId =
-        user?.id || JSON.parse(localStorage.getItem("user") || "{}")?.id;
-      if (!currentUserId) return;
+      // 1. Get current user ID from the most reliable source (sessionStorage to match useAuth)
+      const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+      const currentUserId = user?.id || sessionUser?.id;
+
+      if (!currentUserId) {
+        setIsLoading(false);
+        return;
+      }
 
       try {
         setIsLoading(true);
+        setError(null);
+
+        // 2. Parallel fetch for performance
         const [transData, budgetRes] = await Promise.all([
           TransactionService.getAllByUserId(currentUserId),
-          // CHANGE THIS: Use the correct endpoint (/budgets)
-          fetch(`http://localhost:5000/budgets?userId=${currentUserId}`).then(
-            (res) => res.json(),
-          ),
+          supabase
+            .from("budgets")
+            .select("categoryLimits")
+            .eq("user_id", currentUserId)
+            .maybeSingle(), // Use maybeSingle to avoid 406 errors if no budget exists yet
         ]);
 
+        // 3. Update State
         setTransactions(transData || []);
 
-        // CHANGE THIS: Budget data is likely an array with one object [0]
-        // containing a categoryLimits record
-        if (budgetRes && budgetRes.length > 0) {
-          // In Categories.tsx you used setBudgetData(bData[0])
-          // budgetRes[0].categoryLimits is what you actually need to watch
-          setBudgetLimits(budgetRes[0].categoryLimits || {});
-        } else {
-          setBudgetLimits({});
+        if (budgetRes.data) {
+          setBudgetLimits(budgetRes.data.categoryLimits || {});
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Dashboard Sync Failed:", err);
+        setError(err.message || "Failed to load financial data");
       } finally {
         setIsLoading(false);
       }
     };
+
     loadData();
   }, [user?.id]);
 
   const parseAmount = (amount: any): number => {
     if (typeof amount === "number") return Math.abs(amount);
-    return (
-      Math.abs(parseFloat(amount?.toString().replace(/[^\d.-]/g, ""))) || 0
-    );
+    const parsed = parseFloat(amount?.toString().replace(/[^\d.-]/g, ""));
+    return isNaN(parsed) ? 0 : Math.abs(parsed);
   };
 
   const totals = useMemo(() => {
-    let income = 0,
-      expense = 0;
+    let income = 0;
+    let expense = 0;
     const categorySpent: Record<string, number> = {};
+
     transactions.forEach((t) => {
       const val = parseAmount(t.amount);
-      if (t.type.toLowerCase() === "income") income += val;
-      else {
+      const type = t.type?.toLowerCase().trim();
+
+      if (type === "income") {
+        income += val;
+      } else {
         expense += val;
-        categorySpent[t.category] = (categorySpent[t.category] || 0) + val;
+        const cat = t.category || "Uncategorized";
+        categorySpent[cat] = (categorySpent[cat] || 0) + val;
       }
     });
+
     return {
       income: `₱${income.toLocaleString()}`,
       expense: `₱${expense.toLocaleString()}`,
@@ -92,14 +105,27 @@ const Dashboard = () => {
   }, [transactions]);
 
   const barChartData = useMemo(() => {
+    if (!transactions.length) return [];
+
     return [...transactions]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(-7)
-      .map((t) => ({
-        date: t.date,
-        displayAmount: parseAmount(t.amount),
-        type: t.type.toLowerCase(),
-      }));
+      .map((t) => {
+        // Formats "2026-04-02" into "Apr 02"
+        const dateObj = new Date(t.date);
+        const formattedDate = isNaN(dateObj.getTime())
+          ? t.date
+          : dateObj.toLocaleDateString("en-US", {
+              month: "short",
+              day: "2-digit",
+            });
+
+        return {
+          date: formattedDate,
+          displayAmount: parseAmount(t.amount),
+          type: t.type?.toLowerCase().trim(),
+        };
+      });
   }, [transactions]);
 
   const categoryPieData = useMemo(() => {
@@ -118,34 +144,41 @@ const Dashboard = () => {
     }));
   }, [totals.categorySpent]);
 
-  if (isLoading)
+  if (isLoading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-transparent">
         <Loader2 className="w-10 h-10 animate-spin text-flow-accent" />
       </div>
     );
+  }
 
   return (
     <div className="p-6 lg:p-10 bg-transparent min-h-full">
       <div className="max-w-7xl mx-auto">
         <header className="mb-10">
           <h1 className="text-4xl font-black text-[var(--text-h)] tracking-tighter">
-            Hi, {user?.name || "Guest"}
+            Hi, {user?.name || "User"}
           </h1>
           <p className="text-[var(--text)] text-xs font-black uppercase tracking-[0.2em] mt-2 opacity-70">
             Financial Intelligence Overview
           </p>
         </header>
 
+        {error && (
+          <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3 text-rose-500 text-sm font-bold">
+            <AlertCircle size={18} />
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
-          {/* Main Chart */}
           <section className="xl:col-span-2 bg-[var(--surface)] p-8 rounded-[2rem] border border-[var(--border)] backdrop-blur-md shadow-2xl">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-lg font-black text-[var(--text-h)] uppercase tracking-widest">
                 Activity
               </h3>
               <span className="text-[10px] font-black uppercase text-flow-accent bg-flow-accent/5 px-3 py-1.5 rounded-full border border-flow-accent/10">
-                7-Day Flux
+                Recent Flux
               </span>
             </div>
             <div className="h-[350px] w-full">
@@ -224,7 +257,6 @@ const Dashboard = () => {
               icon={<TrendingUp size={24} />}
               color="text-emerald-500 bg-emerald-500/5 border-emerald-500/10"
             />
-            {/* Spending Map */}
             <section className="bg-[var(--surface)] p-8 rounded-[2rem] border border-[var(--border)] backdrop-blur-md flex-1 flex flex-col items-center">
               <h3 className="text-sm font-black w-full mb-6 text-[var(--text-h)] uppercase tracking-widest">
                 Spending Map
@@ -266,8 +298,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Budget Watch */}
-        <section className="bg-[var(--surface)] p-8 rounded-[2rem] border border-[var(--border)] backdrop-blur-md shadow-2xl mb-10">
+        <section className="bg-[var(--surface)] p-8 rounded-[2rem] border border-[var(--border)] backdrop-blur-md shadow-2xl">
           <div className="flex items-center gap-3 mb-8">
             <div className="p-2 bg-flow-accent/10 rounded-xl text-flow-accent">
               <Target size={20} />
