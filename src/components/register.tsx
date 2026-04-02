@@ -18,6 +18,7 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
 
   return (
     <main className="flex-1 flex flex-col justify-center px-4 lg:px-20 py-12">
+      {/* Success Modal */}
       {isSuccess && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
           <div className="bg-[var(--surface)] p-10 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-[var(--border)]">
@@ -25,9 +26,12 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
             <h2 className="text-3xl font-bold text-[var(--text-h)] mb-3 tracking-tight">
               Success!
             </h2>
+            <p className="text-[var(--text)] mb-8 text-sm">
+              Your ZeroBalance account is ready.
+            </p>
             <button
               onClick={onToggle}
-              className="w-full py-4 bg-flow-button text-white rounded-sm font-bold"
+              className="w-full py-4 bg-flow-button text-white rounded-sm font-bold hover:opacity-90 transition-all"
             >
               Sign in now
             </button>
@@ -56,6 +60,13 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
           Join the future of financial tracking.
         </p>
 
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 text-xs font-bold text-rose-500 bg-rose-500/10 p-4 rounded-sm border border-rose-500/20">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleRegister} className="space-y-6">
           <div className="space-y-1.5">
             <label className="text-[11px] font-black uppercase text-[var(--text)]">
@@ -75,6 +86,7 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
               />
             </div>
           </div>
+
           <div className="space-y-1.5">
             <label className="text-[11px] font-black uppercase text-[var(--text)]">
               Email Address
@@ -93,6 +105,7 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
               />
             </div>
           </div>
+
           <div className="space-y-1.5">
             <label className="text-[11px] font-black uppercase text-[var(--text)]">
               Password
@@ -111,10 +124,11 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
               />
             </div>
           </div>
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-[52px] bg-flow-button text-white rounded-sm font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex justify-center items-center gap-2"
+            className="w-full h-[52px] bg-flow-button text-white rounded-sm font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex justify-center items-center gap-2 disabled:opacity-50"
           >
             {isLoading ? (
               "Creating..."

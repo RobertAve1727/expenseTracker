@@ -26,6 +26,9 @@ const Categories = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [categoryLimits, setCategoryLimits] = useState<Record<string, number>>(
+    {},
+  );
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -35,10 +38,15 @@ const Categories = () => {
     if (!userId) return;
 
     try {
-      // Fetch Categories and Transactions in parallel from Supabase
-      const [catRes, transRes] = await Promise.all([
+      // Fetch Categories, Transactions, and Budgets in parallel
+      const [catRes, transRes, budgetRes] = await Promise.all([
         supabase.from("categories").select("*").eq("user_id", userId),
         supabase.from("transactions").select("*").eq("user_id", userId),
+        supabase
+          .from("budgets")
+          .select("category_limits")
+          .eq("user_id", userId)
+          .maybeSingle(),
       ]);
 
       if (catRes.error) throw catRes.error;
@@ -46,6 +54,7 @@ const Categories = () => {
 
       setCategories(catRes.data || []);
       setTransactions(transRes.data || []);
+      setCategoryLimits(budgetRes.data?.category_limits || {});
     } catch (error) {
       console.error("Supabase Sync Error:", error);
     } finally {
@@ -58,34 +67,40 @@ const Categories = () => {
     setIsDeleting(true);
 
     try {
-      // 1. Get the correct ID from session
       const userSession = JSON.parse(sessionStorage.getItem("user") || "{}");
       const userId = userSession.id;
 
-      if (!userId) throw new Error("No user session found");
+      // 1. Move connected transactions to UNCATEGORIZED
+      // Ensure the casing matches your DB data (usually uppercase based on your Modal logic)
+      const targetCategoryName = categoryToDelete.name.toUpperCase();
 
-      // 2. Perform the Delete
-      // IMPORTANT: Make sure 'id' matches your Primary Key column name in Supabase
-      const { error, count } = await supabase
+      const { error: updateError } = await supabase
+        .from("transactions")
+        .update({ category: "UNCATEGORIZED" })
+        .eq("user_id", userId)
+        .eq("category", targetCategoryName);
+
+      if (updateError) throw updateError;
+
+      // 2. Perform the Category Delete
+      const { error: deleteError } = await supabase
         .from("categories")
         .delete()
-        .eq("id", categoryToDelete.id) // Ensure this matches the DB column name
-        .eq("user_id", userId); // Double-check: is it 'user_id' in DB?
+        .eq("id", categoryToDelete.id)
+        .eq("user_id", userId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
-      // 3. Update Local State (Immediate UI feedback)
-      setCategories((prev) => prev.filter((c) => c.id !== categoryToDelete.id));
-
-      // 4. Cleanup UI
+      // 3. UI Cleanup
       setIsDeleteModalOpen(false);
       setCategoryToDelete(null);
       setActiveMenu(null);
 
-      console.log("Successfully deleted category. Rows affected:", count);
+      // Refresh all data to ensure Budget/Transaction lists are accurate
+      await fetchData();
     } catch (e: any) {
-      console.error("Deletion Error:", e.message);
-      alert(`Delete failed: ${e.message}`);
+      console.error("Deletion failed:", e.message);
+      alert(`Sync Error: ${e.message}`);
     } finally {
       setIsDeleting(false);
     }
@@ -125,7 +140,6 @@ const Categories = () => {
               Manage Spending Segments
             </p>
           </div>
-          {/* View Toggle omitted for brevity, keep your existing UI here */}
         </header>
 
         {/* Search Bar */}
@@ -143,9 +157,14 @@ const Categories = () => {
           className={`grid gap-8 ${viewType === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}
         >
           {filtered.map((cat) => {
+            // Calculation logic
             const spent = transactions
               .filter((t) => t.category === cat.name && t.type === "expense")
               .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+
+            const limit = categoryLimits[cat.name] || 0;
+            const utilization = limit > 0 ? (spent / limit) * 100 : 0;
+            const isOver = utilization > 100;
 
             return (
               <div
@@ -178,16 +197,48 @@ const Categories = () => {
                     </div>
                   )}
                 </div>
+
                 <h3 className="text-xl font-black text-[var(--text-h)] mb-2 tracking-tighter">
                   {cat.name}
                 </h3>
-                <div className="flex justify-between items-end mb-4">
+
+                <div className="flex justify-between items-end mb-6">
                   <span className="text-[9px] font-black text-[var(--text)] uppercase tracking-widest opacity-40">
-                    Segment Spent
+                    Spent
                   </span>
                   <span className="text-[var(--text-h)] text-xs font-black">
                     ₱{spent.toLocaleString()}
                   </span>
+                </div>
+
+                {/* Utilization Section */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                    <span className="opacity-40">Usage</span>
+                    <span
+                      className={isOver ? "text-rose-500" : "text-flow-accent"}
+                    >
+                      {limit > 0 ? `${Math.round(utilization)}%` : "No Limit"}
+                    </span>
+                  </div>
+
+                  <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                    <div
+                      className={`h-full transition-all duration-1000 ${isOver ? "bg-rose-500" : "bg-flow-accent"}`}
+                      style={{ width: `${Math.min(utilization, 100)}%` }}
+                    />
+                  </div>
+
+                  {limit > 0 && (
+                    <div className="flex justify-between items-center pt-1">
+                      <span className="text-[8px] font-bold opacity-20 uppercase tracking-tighter italic">
+                        Cap
+                      </span>
+                      <span className="text-[10px] font-black text-[var(--text-h)] opacity-60">
+                        ₱{limit.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );

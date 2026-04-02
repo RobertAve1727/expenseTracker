@@ -11,32 +11,30 @@ export const useRegister = () => {
     setError("");
 
     try {
-      // STEP 1: Create the user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // We pass the name inside 'options.data' so the SQL Trigger can find it
+      const { data, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+          },
+        },
       });
 
       if (authError) {
-        setError(authError.message);
+        // Handle the case where the user exists in Auth but not in Profiles
+        if (authError.message.includes("already registered")) {
+          setError(
+            "This email is already in use. Try logging in or use a different email.",
+          );
+        } else {
+          setError(authError.message);
+        }
         return false;
       }
 
-      // STEP 2: If auth is successful, insert the name and email into your 'profiles' table
-      if (authData.user) {
-        const { error: profileError } = await supabase.from("profiles").insert([
-          {
-            id: authData.user.id, // Links the Profile to the Auth account
-            name: formData.fullName,
-            email: formData.email,
-          },
-        ]);
-
-        if (profileError) {
-          setError("Account created, but profile setup failed.");
-          return false;
-        }
-
+      if (data?.user) {
         setIsSuccess(true);
         return true;
       }

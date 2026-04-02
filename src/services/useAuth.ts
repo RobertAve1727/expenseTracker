@@ -10,8 +10,7 @@ export const useAuth = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1. SYNC SESSION & LISTEN FOR CHANGES
-  // This ensures the Supabase Client is actually "Authenticated" even after a refresh
+  // 1. SYNC SESSION & VERIFICATION
   useEffect(() => {
     const syncSession = async () => {
       const {
@@ -19,43 +18,62 @@ export const useAuth = () => {
       } = await supabase.auth.getSession();
 
       if (session?.user) {
-        // Optional: Re-fetch profile here if you want the latest data
-        const { data: profile } = await supabase
+        // Fetch profile
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
+
+        /**
+         * THE FIX: GRACE PERIOD
+         * If the user is on the login page or registering, we don't want to
+         * trigger an immediate logout while the profile is still being created.
+         */
+        const isEntryPage =
+          window.location.pathname === "/login" ||
+          window.location.pathname === "/";
+
+        if (!profile && !isEntryPage) {
+          console.warn(
+            "Session valid but Profile missing. Ghost session cleared.",
+          );
+          await logout();
+          return;
+        }
 
         const userData = {
           id: session.user.id,
           email: session.user.email,
-          name: profile?.name || "User",
           ...profile,
         };
 
         setUser(userData);
         sessionStorage.setItem("user", JSON.stringify(userData));
       } else {
-        // If Supabase says there is no session, clear our local state
-        setUser(null);
-        sessionStorage.removeItem("user");
+        handleLocalCleanup();
       }
     };
 
     syncSession();
 
-    // Listen for Auth events (Login, Logout, Token Refresh)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        setUser(null);
-        sessionStorage.removeItem("user");
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        handleLocalCleanup();
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleLocalCleanup = () => {
+    setUser(null);
+    sessionStorage.removeItem("user");
+    // Notify App.tsx to update its state
+    window.dispatchEvent(new Event("auth-change"));
+  };
 
   const verifyUser = async (email: string, password: string) => {
     setIsLoading(true);
@@ -74,21 +92,28 @@ export const useAuth = () => {
       }
 
       if (data?.user) {
-        const { data: profile } = await supabase
+        // Strict check: Does the profile exist in the database?
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", data.user.id)
-          .single();
+          .maybeSingle();
+
+        if (!profile || profileError) {
+          await supabase.auth.signOut();
+          setError("Account not found in our records.");
+          return null;
+        }
 
         const userData = {
           id: data.user.id,
           email: data.user.email,
-          name: profile?.name || "User",
           ...profile,
         };
 
         setUser(userData);
         sessionStorage.setItem("user", JSON.stringify(userData));
+        window.dispatchEvent(new Event("auth-change"));
         return userData;
       }
       return null;
@@ -102,8 +127,7 @@ export const useAuth = () => {
 
   const logout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    sessionStorage.removeItem("user");
+    handleLocalCleanup();
   };
 
   return { user, verifyUser, logout, error, isLoading };
