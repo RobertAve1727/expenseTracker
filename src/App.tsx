@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import {
-  BrowserRouter as Router,
+  HashRouter as Router, // Changed from BrowserRouter to HashRouter
   Routes,
   Route,
   Navigate,
   Outlet,
 } from "react-router-dom";
-import { supabase } from "./services/supabaseClient"; // Ensure this import exists
+import { supabase } from "./services/supabaseClient";
 import AuthWrapper from "./components/authWrapper";
 import Dashboard from "./components/dashboard";
 import TransactionPage from "./components/transaction";
@@ -46,7 +46,7 @@ function App() {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
 
-    // 2. SERVER-SIDE SESSION VALIDATION (The Fix)
+    // 2. SERVER-SIDE SESSION VALIDATION
     const validateSession = async () => {
       const {
         data: { session },

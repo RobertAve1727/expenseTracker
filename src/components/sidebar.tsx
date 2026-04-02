@@ -19,14 +19,14 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const savedUser =
+  // Use the user from hook (which includes DB profile data like 'name')
+  const activeUser =
     user || JSON.parse(sessionStorage.getItem("user") || "null");
 
-  const handleLogout = (e: React.MouseEvent) => {
+  const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
-    logout();
-    sessionStorage.removeItem("user");
-    window.dispatchEvent(new Event("auth-change"));
+    await logout();
+    // navigate automatically redirects to the correct hash route (#/login)
     navigate("/login");
   };
 
@@ -110,7 +110,7 @@ const Sidebar = () => {
         <div className="flex items-center gap-3 p-2 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--border)]">
           <div className="relative">
             <img
-              src={`https://ui-avatars.com/api/?name=${savedUser?.name || "User"}&background=6366f1&color=fff&bold=true`}
+              src={`https://ui-avatars.com/api/?name=${activeUser?.name || "User"}&background=6366f1&color=fff&bold=true`}
               className="w-10 h-10 rounded-xl object-cover grayscale-[0.5] hover:grayscale-0 transition-all"
               alt="user"
             />
@@ -118,10 +118,10 @@ const Sidebar = () => {
           </div>
           <div className="overflow-hidden flex-1">
             <p className="text-xs font-black text-[var(--text-h)] truncate uppercase tracking-tighter">
-              {savedUser?.name || "Guest User"}
+              {activeUser?.name || "Guest User"}
             </p>
             <p className="text-[9px] truncate text-[var(--text)] opacity-60 font-bold uppercase tracking-widest">
-              {savedUser?.email ? "Pro Member" : "Guest"}
+              {activeUser?.email ? "Pro Member" : "Guest"}
             </p>
           </div>
           <button

@@ -26,12 +26,14 @@ export const useAuth = () => {
           .maybeSingle();
 
         /**
-         * THE FIX: GRACE PERIOD
-         * If the user is on the login page or registering, we don't want to
-         * trigger an immediate logout while the profile is still being created.
+         * THE FIX: GRACE PERIOD FOR HASHROUTER
+         * We check window.location.hash to see if the user is currently
+         * on the login or register routes.
          */
+        const currentHash = window.location.hash;
         const isEntryPage =
-          window.location.pathname === "/login" ||
+          currentHash.includes("login") ||
+          currentHash.includes("register") ||
           window.location.pathname === "/";
 
         if (!profile && !isEntryPage) {
@@ -45,7 +47,7 @@ export const useAuth = () => {
         const userData = {
           id: session.user.id,
           email: session.user.email,
-          ...profile,
+          ...(profile || {}), // Use empty object if profile is still being created
         };
 
         setUser(userData);
