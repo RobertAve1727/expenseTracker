@@ -4,17 +4,18 @@
 @variant dark (&:where(.dark, .dark *));
 
 /* --- GLOBAL LAYOUT --- */
-/* --- THE GLOBAL MESH STAGE --- */
 html,
 body {
   margin: 0;
   padding: 0;
-  height: 100vh;
+  /* Use min-height so content can grow if needed */
+  min-height: 100vh;
   width: 100vw;
-  overflow: hidden;
+  /* Use 'auto' instead of 'hidden' to prevent content being trapped on small screens */
+  overflow-x: hidden;
   background-color: var(--mesh-bg);
   color: var(--text);
-  /* The Mesh implementation */
+
   background-image:
     radial-gradient(at 0% 0%, var(--mesh-color-1) 0px, transparent 50%),
     radial-gradient(at 100% 0%, var(--mesh-color-2) 0px, transparent 50%),
@@ -24,43 +25,40 @@ body {
   transition: background 0.5s ease;
 }
 
-@theme {
-  /* Flowhub Colors */
-  --color-flow-accent: #4fd1c7;
-  --color-flow-button: #1f2937;
-  --color-flow-peach: #fed7aa;
-  --color-flow-mint: #a7f3d0;
-  --color-flow-yellow: #fef3c7;
-
-  /* Your existing functional colors */
-  --color-income: #22c55e;
-  --color-expense: #ef4444;
-  --font-sans: "Rubik", ui-sans-serif, system-ui;
-  --font-handwritten: "Caveat", cursive;
-}
-
 :root {
-  /* Mesh Gradient Colors - Light Mode */
   --mesh-bg: #f5f7fa;
-  --mesh-color-1: rgba(79, 209, 199, 0.15); /* Flow Teal */
-  --mesh-color-2: rgba(254, 215, 170, 0.1); /* Flow Peach */
-  --mesh-color-3: rgba(167, 243, 208, 0.1); /* Flow Mint */
+  --mesh-color-1: rgba(79, 209, 199, 0.15);
+  --mesh-color-2: rgba(254, 215, 170, 0.1);
+  --mesh-color-3: rgba(167, 243, 208, 0.1);
 
   --text: #6b7280;
   --text-h: #1a1a1a;
   --border: #e5e7eb;
-  --surface: rgba(255, 255, 255, 0.7); /* Translucent for glass effect */
+  --surface: rgba(255, 255, 255, 0.7);
 
-  font:
-    18px/145% "Rubik",
-    sans-serif;
+  /* --- SCALE LOGIC --- */
+  /* This scales the entire app down slightly on smaller screens */
+  font-size: clamp(14px, 1.6vh, 18px);
+}
+
+/* On standard laptops (13-14 inch) */
+@media (max-width: 1440px) {
+  :root {
+    font-size: 15px;
+  }
+}
+
+/* On small laptops/Tablets */
+@media (max-width: 1024px) {
+  :root {
+    font-size: 14px;
+  }
 }
 
 .dark {
-  /* Mesh Gradient Colors - Dark Mode */
   --mesh-bg: #0b0e14;
   --mesh-color-1: rgba(79, 209, 199, 0.08);
-  --mesh-color-2: rgba(99, 102, 241, 0.05); /* Indigo tint */
+  --mesh-color-2: rgba(99, 102, 241, 0.05);
   --mesh-color-3: rgba(15, 17, 21, 1);
 
   --text: #9ca3af;
@@ -68,16 +66,26 @@ body {
   --border: #30363d;
   --surface: rgba(22, 27, 34, 0.6);
 }
-/* --- UTILITIES --- */
+
+@theme {
+  --color-flow-accent: #4fd1c7;
+  --color-flow-button: #1f2937;
+  --color-flow-peach: #fed7aa;
+  --color-flow-mint: #a7f3d0;
+  --color-flow-yellow: #fef3c7;
+  --color-income: #22c55e;
+  --color-expense: #ef4444;
+  --font-sans: "Rubik", ui-sans-serif, system-ui;
+  --font-handwritten: "Caveat", cursive;
+}
+
 @layer base {
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
-
   input[type="number"] {
-    -moz-appearance: textfield;
     appearance: textfield;
   }
 
@@ -91,14 +99,26 @@ body {
 }
 
 #root {
-  height: 100%;
+  height: 100vh;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.auth-shell main,
+/* Form transition scrollbar fix */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+/* .auth-shell main,
 .auth-shell aside {
   animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
+} */
 
 @keyframes slideIn {
   from {

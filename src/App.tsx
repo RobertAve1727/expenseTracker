@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  HashRouter as Router, // Changed from BrowserRouter to HashRouter
+  HashRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -15,9 +15,8 @@ import BudgetLimit from "./features/budgetLimit";
 import CategoryPage from "./components/category";
 import SmartInsights from "./features/smartInsights";
 import Sidebar from "./components/sidebar";
-import "./App.css";
+import "./index.css";
 
-// Updated: Check if local session exists
 const hasLocalSession = () => {
   const user = sessionStorage.getItem("user");
   return user !== null && user !== "undefined";
@@ -29,10 +28,17 @@ const ProtectedRoute = () => {
 
 const AppLayout = () => {
   return (
-    <div className="flex bg-transparent h-screen overflow-hidden transition-colors duration-300">
-      <Sidebar />
+    <div className="flex bg-transparent min-h-screen w-full overflow-hidden transition-colors duration-300">
+      {/* Sidebar: flex-shrink-0 keeps it from getting narrow */}
+      <div className="flex-shrink-0 h-screen sticky top-0">
+        <Sidebar />
+      </div>
+
+      {/* Main Content: max-w ensures things don't get too wide on giant monitors */}
       <main className="flex-1 h-screen overflow-y-auto bg-white/30 dark:bg-black/10 backdrop-blur-[2px]">
-        <Outlet />
+        <div className="max-w-[1600px] mx-auto w-full p-4 lg:p-8">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
@@ -42,18 +48,14 @@ function App() {
   const [isAuth, setIsAuth] = useState(hasLocalSession());
 
   useEffect(() => {
-    // 1. Theme Sync
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
 
-    // 2. SERVER-SIDE SESSION VALIDATION
     const validateSession = async () => {
       const {
         data: { session },
         error,
       } = await supabase.auth.getSession();
-
-      // If Supabase says no session (user deleted or expired)
       if (error || !session) {
         sessionStorage.removeItem("user");
         setIsAuth(false);
@@ -62,10 +64,8 @@ function App() {
 
     validateSession();
 
-    // 3. Auth Change Listener
     const checkAuth = () => setIsAuth(hasLocalSession());
     window.addEventListener("auth-change", checkAuth);
-
     return () => window.removeEventListener("auth-change", checkAuth);
   }, []);
 

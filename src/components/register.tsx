@@ -17,13 +17,13 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
   };
 
   return (
-    <main className="flex-1 flex flex-col justify-center px-4 lg:px-20 py-12">
+    <main className="flex-1 flex flex-col justify-center px-6 lg:px-20 py-[4vh] w-full h-full">
       {/* Success Modal */}
       {isSuccess && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
           <div className="bg-[var(--surface)] p-10 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-[var(--border)]">
             <CheckCircle2 size={40} className="text-flow-accent mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-[var(--text-h)] mb-3 tracking-tight">
+            <h2 className="text-2xl xl:text-3xl font-bold text-[var(--text-h)] mb-3 tracking-tight">
               Success!
             </h2>
             <p className="text-[var(--text)] mb-8 text-sm">
@@ -39,37 +39,44 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
         </div>
       )}
 
-      <div className="w-full max-w-sm mx-auto lg:mx-0">
-        <div className="mb-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-[var(--text-h)] rounded-lg flex items-center justify-center p-2">
+      <div className="w-full max-w-sm mx-auto lg:mx-0 flex flex-col h-full justify-between lg:justify-center">
+        {/* Logo Section */}
+        <div className="mb-[2vh] xl:mb-10 flex items-center gap-3 shrink-0">
+          <div className="w-8 h-8 xl:w-10 xl:h-10 bg-[var(--text-h)] rounded-lg flex items-center justify-center p-2">
             <img
               src={logoUrl}
               alt="Logo"
               className="h-full w-auto brightness-0 invert"
             />
           </div>
-          <span className="text-2xl font-bold tracking-tighter text-[var(--text-h)] uppercase">
+          <span className="text-xl xl:text-2xl font-bold tracking-tighter text-[var(--text-h)] uppercase">
             ZeroBalance
           </span>
         </div>
 
-        <h1 className="text-4xl font-semibold text-[var(--text-h)] mb-2 tracking-tight">
-          Register
-        </h1>
-        <p className="text-[var(--text)] text-sm mb-8 font-light">
-          Join the future of financial tracking.
-        </p>
+        {/* Header Section */}
+        <div className="mb-[1.5vh] xl:mb-8 shrink-0">
+          <h1 className="text-3xl xl:text-4xl font-semibold text-[var(--text-h)] mb-1 tracking-tight">
+            Register
+          </h1>
+          <p className="text-[var(--text)] text-xs xl:text-sm font-light">
+            Join the future of financial tracking.
+          </p>
+        </div>
 
-        {/* Error Display */}
         {error && (
-          <div className="mb-6 text-xs font-bold text-rose-500 bg-rose-500/10 p-4 rounded-sm border border-rose-500/20">
+          <div className="mb-4 text-[10px] font-bold text-rose-500 bg-rose-500/10 p-3 rounded-sm border border-rose-500/20 shrink-0">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleRegister} className="space-y-6">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-black uppercase text-[var(--text)]">
+        {/* Form Section */}
+        <form
+          onSubmit={handleRegister}
+          className="space-y-[1.2vh] xl:space-y-5 flex-1 lg:flex-none"
+        >
+          <div className="space-y-1">
+            <label className="text-[10px] xl:text-[11px] font-black uppercase text-[var(--text)]">
               Full Name
             </label>
             <div className="relative">
@@ -82,13 +89,13 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
                   setFormData({ ...formData, fullName: e.target.value })
                 }
                 placeholder="Your full name"
-                className="w-full pl-11 pr-4 h-[52px] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
+                className="w-full pl-11 pr-4 h-[min(48px,6vh)] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-black uppercase text-[var(--text)]">
+          <div className="space-y-1">
+            <label className="text-[10px] xl:text-[11px] font-black uppercase text-[var(--text)]">
               Email Address
             </label>
             <div className="relative">
@@ -101,13 +108,13 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
                   setFormData({ ...formData, email: e.target.value })
                 }
                 placeholder="email@example.com"
-                className="w-full pl-11 pr-4 h-[52px] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
+                className="w-full pl-11 pr-4 h-[min(48px,6vh)] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-black uppercase text-[var(--text)]">
+          <div className="space-y-1">
+            <label className="text-[10px] xl:text-[11px] font-black uppercase text-[var(--text)]">
               Password
             </label>
             <div className="relative">
@@ -120,7 +127,7 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
                   setFormData({ ...formData, password: e.target.value })
                 }
                 placeholder="••••••••"
-                className="w-full pl-11 pr-4 h-[52px] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
+                className="w-full pl-11 pr-4 h-[min(48px,6vh)] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
               />
             </div>
           </div>
@@ -128,7 +135,7 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-[52px] bg-flow-button text-white rounded-sm font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex justify-center items-center gap-2 disabled:opacity-50"
+            className="w-full h-[min(52px,7vh)] bg-flow-button text-white rounded-sm font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex justify-center items-center gap-2 disabled:opacity-50 mt-2"
           >
             {isLoading ? (
               "Creating..."
@@ -140,7 +147,8 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
           </button>
         </form>
 
-        <p className="mt-12 text-sm text-center lg:text-left text-[var(--text)]">
+        {/* Footer Section */}
+        <p className="mt-[3vh] xl:mt-10 text-xs xl:text-sm text-center lg:text-left text-[var(--text)] shrink-0">
           Already a member?{" "}
           <button
             onClick={onToggle}
