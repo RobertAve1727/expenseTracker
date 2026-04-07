@@ -26,7 +26,7 @@ body {
 }
 
 :root {
-  --mesh-bg: #f5f7fa;
+  --mesh-bg: linear-gradient(135deg, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
   --mesh-color-1: rgba(79, 209, 199, 0.15);
   --mesh-color-2: rgba(254, 215, 170, 0.1);
   --mesh-color-3: rgba(167, 243, 208, 0.1);

@@ -14,6 +14,7 @@ import SettingsPage from "./components/settings";
 import BudgetLimit from "./features/budgetLimit";
 import CategoryPage from "./components/category";
 import SmartInsights from "./features/smartInsights";
+import Alerts from "./features/alerts";
 import Sidebar from "./components/sidebar";
 import "./index.css";
 
@@ -29,13 +30,11 @@ const ProtectedRoute = () => {
 const AppLayout = () => {
   return (
     <div className="flex bg-transparent min-h-screen w-full overflow-hidden transition-colors duration-300">
-      {/* Sidebar: flex-shrink-0 keeps it from getting narrow */}
       <div className="flex-shrink-0 h-screen sticky top-0">
         <Sidebar />
       </div>
 
-      {/* Main Content: max-w ensures things don't get too wide on giant monitors */}
-      <main className="flex-1 h-screen overflow-y-auto bg-white/30 dark:bg-black/10 backdrop-blur-[2px]">
+      <main className="flex-1 h-screen overflow-y-auto bg-white/30 dark:bg-black/10 backdrop-blur-[2px] custom-scrollbar">
         <div className="max-w-[1600px] mx-auto w-full p-4 lg:p-8">
           <Outlet />
         </div>
@@ -92,6 +91,7 @@ function App() {
             <Route path="/categories" element={<CategoryPage />} />
             <Route path="/budget" element={<BudgetLimit />} />
             <Route path="/insights" element={<SmartInsights />} />
+            <Route path="/alerts" element={<Alerts />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route index element={<Navigate to="/dashboard" replace />} />
           </Route>

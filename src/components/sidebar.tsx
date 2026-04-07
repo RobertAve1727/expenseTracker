@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -14,24 +14,60 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "../services/useAuth";
+import { supabase } from "../services/supabaseClient"; // Ensure this is imported
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Use the user from hook (which includes DB profile data like 'name')
   const activeUser =
     user || JSON.parse(sessionStorage.getItem("user") || "null");
+
+  // Fetch and Listen for Alerts
+  useEffect(() => {
+    if (!activeUser?.id) return;
+
+    const fetchUnreadCount = async () => {
+      const { count, error } = await supabase
+        .from("alerts")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", activeUser.id)
+        .eq("is_read", false);
+
+      if (!error) setUnreadCount(count || 0);
+    };
+
+    fetchUnreadCount();
+
+    // Realtime subscription to update the badge immediately
+    const channel = supabase
+      .channel("sidebar-alerts")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "alerts",
+          filter: `user_id=eq.${activeUser.id}`,
+        },
+        () => fetchUnreadCount(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeUser?.id]);
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
     await logout();
-    // navigate automatically redirects to the correct hash route (#/login)
     navigate("/login");
   };
 
   return (
-    <aside className="w-68 bg-[var(--surface)]/80 backdrop-blur-xl text-[var(--text)] flex flex-col p-6 border-r border-[var(--border)] h-screen sticky top-0 transition-all duration-300 overflow-y-auto">
+    <aside className="w-68 bg-[var(--surface)]/80 backdrop-blur-xl text-[var(--text)] flex flex-col p-6 border-r border-[var(--border)] h-screen sticky top-0 transition-all duration-300 overflow-y-auto custom-scrollbar">
       <Link
         to="/dashboard"
         className="flex items-center gap-3 text-[var(--text-h)] mb-10 px-2 flex-shrink-0 group"
@@ -91,7 +127,7 @@ const Sidebar = () => {
             to="/alerts"
             icon={<Bell size={18} />}
             label="Alerts"
-            badge="3"
+            badge={unreadCount > 0 ? unreadCount.toString() : undefined}
           />
           <NavItem
             to="/settings"
@@ -106,7 +142,7 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      <div className="mt-auto pt-6 border-t border-[var(--border)] bg-transparent">
+      <div className="mt-auto pt-6 border-t border-[var(--border)]">
         <div className="flex items-center gap-3 p-2 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--border)]">
           <div className="relative">
             <img
@@ -127,7 +163,6 @@ const Sidebar = () => {
           <button
             onClick={handleLogout}
             className="p-2 text-[var(--text)] hover:text-rose-500 transition-colors"
-            title="Logout"
           >
             <LogOut size={18} />
           </button>
@@ -158,11 +193,7 @@ const NavItem = ({
     to={to}
     className={({ isActive }) => `
       flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 group
-      ${
-        isActive
-          ? "bg-flow-accent text-white shadow-xl shadow-flow-accent/20 translate-x-1"
-          : "text-[var(--text)] hover:bg-white/5 hover:text-[var(--text-h)]"
-      }
+      ${isActive ? "bg-flow-accent text-white shadow-xl shadow-flow-accent/20 translate-x-1" : "text-[var(--text)] hover:bg-white/5 hover:text-[var(--text-h)]"}
     `}
   >
     <div className="flex items-center gap-3">
@@ -172,7 +203,7 @@ const NavItem = ({
       </span>
     </div>
     {badge && (
-      <span className="bg-flow-accent/20 text-flow-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-flow-accent/20">
+      <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 min-w-[18px] flex items-center justify-center rounded-full border border-white/20 animate-in zoom-in duration-300">
         {badge}
       </span>
     )}
