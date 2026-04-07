@@ -1,13 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Login from "./login";
 import Register from "./register";
-import { Zap } from "lucide-react";
+import { Zap, Sun, Moon } from "lucide-react";
 
 const AuthWrapper = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isDark, setIsDark] = useState(true);
+
+  const toggleTheme = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    if (newTheme) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  };
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light") {
+      setIsDark(false);
+      document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
 
   return (
-    <div className="h-screen w-full flex items-center justify-center p-4 lg:p-8 bg-[var(--mesh-bg)] overflow-hidden transition-colors duration-300">
+    <div className="h-screen w-full flex items-center justify-center p-4 lg:p-8 bg-[var(--mesh-bg)] overflow-hidden transition-colors duration-300 relative">
+      {/* --- BROWSER-LEVEL THEME TOGGLE --- */}
+      {/* Positioned fixed to the top right of the viewport, outside the container */}
+      <button
+        onClick={toggleTheme}
+        className="fixed top-6 right-6 z-[100] p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xl hover:scale-110 active:scale-95 transition-all text-[var(--text-h)] backdrop-blur-md"
+      >
+        {isDark ? (
+          <Sun size={20} className="text-amber-400" />
+        ) : (
+          <Moon size={20} className="text-indigo-400" />
+        )}
+      </button>
+
       <div className="max-w-7xl w-full h-[min(850px,92vh)] relative flex overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-[var(--surface)] backdrop-blur-md">
         {/* --- THE MOVING HERO SECTION --- */}
         <aside
@@ -63,36 +99,18 @@ const AuthWrapper = () => {
 
         {/* --- FORM AREA --- */}
         <div className="relative w-full h-full flex z-10">
-          {/* LEFT SLOT (Login) */}
           <div className="w-full lg:w-1/2 h-full relative">
             <div
-              className={`absolute inset-0 w-full h-full flex transition-all duration-700 ease-in-out ${
-                isLogin
-                  ? "opacity-100 translate-x-0 z-20 pointer-events-auto"
-                  : "opacity-0 translate-x-20 z-0 pointer-events-none"
-              }`}
+              className={`absolute inset-0 w-full h-full flex transition-all duration-700 ease-in-out ${isLogin ? "opacity-100 translate-x-0 z-20 pointer-events-auto" : "opacity-0 translate-x-20 z-0 pointer-events-none"}`}
             >
-              {/* Reset Login state too when it's hidden */}
-              <Login
-                key={isLogin ? "login-active" : "login-inactive"}
-                onToggle={() => setIsLogin(false)}
-              />
+              <Login onToggle={() => setIsLogin(false)} />
             </div>
           </div>
 
-          {/* RIGHT SLOT (Register) */}
           <div className="w-full lg:w-1/2 h-full relative">
             <div
-              className={`absolute inset-0 w-full h-full flex transition-all duration-700 ease-in-out ${
-                !isLogin
-                  ? "opacity-100 translate-x-0 z-20 pointer-events-auto"
-                  : "opacity-0 -translate-x-20 z-0 pointer-events-none"
-              }`}
+              className={`absolute inset-0 w-full h-full flex transition-all duration-700 ease-in-out ${!isLogin ? "opacity-100 translate-x-0 z-20 pointer-events-auto" : "opacity-0 -translate-x-20 z-0 pointer-events-none"}`}
             >
-              {/* CRITICAL FIX: The 'key' attribute below forces React to 
-                  destroy and recreate the Register component when isLogin changes.
-                  This clears the success modal automatically.
-              */}
               <Register
                 key={isLogin ? "reg-hidden" : "reg-visible"}
                 onToggle={() => setIsLogin(true)}

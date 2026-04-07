@@ -14,7 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "../services/useAuth";
-import { supabase } from "../services/supabaseClient"; // Ensure this is imported
+import { supabase } from "../services/supabaseClient";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -24,7 +24,6 @@ const Sidebar = () => {
   const activeUser =
     user || JSON.parse(sessionStorage.getItem("user") || "null");
 
-  // Fetch and Listen for Alerts
   useEffect(() => {
     if (!activeUser?.id) return;
 
@@ -40,7 +39,6 @@ const Sidebar = () => {
 
     fetchUnreadCount();
 
-    // Realtime subscription to update the badge immediately
     const channel = supabase
       .channel("sidebar-alerts")
       .on(
@@ -146,7 +144,8 @@ const Sidebar = () => {
         <div className="flex items-center gap-3 p-2 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--border)]">
           <div className="relative">
             <img
-              src={`https://ui-avatars.com/api/?name=${activeUser?.name || "User"}&background=6366f1&color=fff&bold=true`}
+              /* Use only first name for the avatar generation to keep it simple */
+              src={`https://ui-avatars.com/api/?name=${activeUser?.first_name || "User"}&background=6366f1&color=fff&bold=true`}
               className="w-10 h-10 rounded-xl object-cover grayscale-[0.5] hover:grayscale-0 transition-all"
               alt="user"
             />
@@ -154,7 +153,10 @@ const Sidebar = () => {
           </div>
           <div className="overflow-hidden flex-1">
             <p className="text-xs font-black text-[var(--text-h)] truncate uppercase tracking-tighter">
-              {activeUser?.name || "Guest User"}
+              {/* Combine First and Last Name for Sidebar */}
+              {activeUser?.first_name
+                ? `${activeUser.first_name} ${activeUser.last_name || ""}`
+                : "Guest User"}
             </p>
             <p className="text-[9px] truncate text-[var(--text)] opacity-60 font-bold uppercase tracking-widest">
               {activeUser?.email ? "Pro Member" : "Guest"}

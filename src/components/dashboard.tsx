@@ -32,7 +32,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      // 1. Get current user ID from the most reliable source (sessionStorage to match useAuth)
       const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
       const currentUserId = user?.id || sessionUser?.id;
 
@@ -45,17 +44,15 @@ const Dashboard = () => {
         setIsLoading(true);
         setError(null);
 
-        // 2. Parallel fetch for performance
         const [transData, budgetRes] = await Promise.all([
           TransactionService.getAllByUserId(currentUserId),
           supabase
             .from("budgets")
             .select("categoryLimits")
             .eq("user_id", currentUserId)
-            .maybeSingle(), // Use maybeSingle to avoid 406 errors if no budget exists yet
+            .maybeSingle(),
         ]);
 
-        // 3. Update State
         setTransactions(transData || []);
 
         if (budgetRes.data) {
@@ -111,7 +108,6 @@ const Dashboard = () => {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(-7)
       .map((t) => {
-        // Formats "2026-04-02" into "Apr 02"
         const dateObj = new Date(t.date);
         const formattedDate = isNaN(dateObj.getTime())
           ? t.date
@@ -157,7 +153,8 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto">
         <header className="mb-10">
           <h1 className="text-4xl font-black text-[var(--text-h)] tracking-tighter">
-            Hi, {user?.name || "User"}
+            {/* Displaying only First Name here */}
+            Hi, {user?.first_name || "User"}
           </h1>
           <p className="text-[var(--text)] text-xs font-black uppercase tracking-[0.2em] mt-2 opacity-70">
             Financial Intelligence Overview

@@ -6,19 +6,24 @@ import { useRegister } from "../services/useRegister";
 const Register = ({ onToggle }: { onToggle: () => void }) => {
   const { registerUser, isLoading, error, isSuccess } = useRegister();
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
   });
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    await registerUser(formData);
+    // Combining names for the backend if your service still expects a single string,
+    // otherwise pass the object as is.
+    await registerUser({
+      ...formData,
+      fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+    });
   };
 
   return (
     <main className="flex-1 flex flex-col justify-center px-6 lg:px-20 py-[4vh] w-full h-full">
-      {/* Success Modal */}
       {isSuccess && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
           <div className="bg-[var(--surface)] p-10 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-[var(--border)]">
@@ -40,7 +45,6 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
       )}
 
       <div className="w-full max-w-sm mx-auto lg:mx-0 flex flex-col h-full justify-between lg:justify-center">
-        {/* Logo Section */}
         <div className="mb-[2vh] xl:mb-10 flex items-center gap-3 shrink-0">
           <div className="w-8 h-8 xl:w-10 xl:h-10 bg-[var(--text-h)] rounded-lg flex items-center justify-center p-2">
             <img
@@ -54,7 +58,6 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
           </span>
         </div>
 
-        {/* Header Section */}
         <div className="mb-[1.5vh] xl:mb-8 shrink-0">
           <h1 className="text-3xl xl:text-4xl font-semibold text-[var(--text-h)] mb-1 tracking-tight">
             Register
@@ -70,27 +73,46 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
           </div>
         )}
 
-        {/* Form Section */}
         <form
           onSubmit={handleRegister}
           className="space-y-[1.2vh] xl:space-y-5 flex-1 lg:flex-none"
         >
-          <div className="space-y-1">
-            <label className="text-[10px] xl:text-[11px] font-black uppercase text-[var(--text)]">
-              Full Name
-            </label>
-            <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text)] opacity-60" />
-              <input
-                type="text"
-                required
-                value={formData.fullName}
-                onChange={(e) =>
-                  setFormData({ ...formData, fullName: e.target.value })
-                }
-                placeholder="Your full name"
-                className="w-full pl-11 pr-4 h-[min(48px,6vh)] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
-              />
+          {/* First Name & Last Name Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] xl:text-[11px] font-black uppercase text-[var(--text)]">
+                First Name
+              </label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text)] opacity-60" />
+                <input
+                  type="text"
+                  required
+                  value={formData.firstName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, firstName: e.target.value })
+                  }
+                  placeholder="First name"
+                  className="w-full pl-11 pr-4 h-[min(48px,6vh)] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] xl:text-[11px] font-black uppercase text-[var(--text)]">
+                Last Name
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lastName: e.target.value })
+                  }
+                  placeholder="Last name"
+                  className="w-full px-4 h-[min(48px,6vh)] bg-[var(--surface)] border border-[var(--border)] rounded-sm text-sm text-[var(--text-h)] focus:border-flow-accent outline-none transition-all"
+                />
+              </div>
             </div>
           </div>
 
@@ -141,13 +163,12 @@ const Register = ({ onToggle }: { onToggle: () => void }) => {
               "Creating..."
             ) : (
               <>
-                Create Account <ArrowRight size={18} />
+                {"Create Account"} <ArrowRight size={18} />
               </>
             )}
           </button>
         </form>
 
-        {/* Footer Section */}
         <p className="mt-[3vh] xl:mt-10 text-xs xl:text-sm text-center lg:text-left text-[var(--text)] shrink-0">
           Already a member?{" "}
           <button

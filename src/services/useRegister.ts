@@ -11,19 +11,20 @@ export const useRegister = () => {
     setError("");
 
     try {
-      // We pass the name inside 'options.data' so the SQL Trigger can find it
+      // We pass first_name and last_name inside 'options.data'
+      // The SQL Trigger on your 'auth.users' table will use these to fill 'profiles'
       const { data, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            full_name: formData.fullName,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
           },
         },
       });
 
       if (authError) {
-        // Handle the case where the user exists in Auth but not in Profiles
         if (authError.message.includes("already registered")) {
           setError(
             "This email is already in use. Try logging in or use a different email.",
