@@ -16,6 +16,7 @@ import CategoryPage from "./components/category";
 import SmartInsights from "./features/smartInsights";
 import Alerts from "./features/alerts";
 import Sidebar from "./components/sidebar";
+import Support from "./components/support"; // Import your new Support component
 import "./index.css";
 
 const hasLocalSession = () => {
@@ -93,6 +94,8 @@ function App() {
             <Route path="/insights" element={<SmartInsights />} />
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/support" element={<Support />} />{" "}
+            {/* New Support Route */}
             <Route index element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Route>
